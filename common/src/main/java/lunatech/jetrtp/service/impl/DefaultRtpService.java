@@ -10,6 +10,8 @@ import lunatech.jetrtp.service.RtpService;
 import lunatech.jetrtp.service.SafeLocationService;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import space.arim.morepaperlib.MorePaperLib;
+import space.arim.morepaperlib.scheduling.ScheduledTask;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -21,9 +23,9 @@ public class DefaultRtpService implements RtpService {
     private final SafeLocationService safeLocationService;
     private final LocationCacheService cacheService;
     private final EconomyProvider economyProvider;
-    private final space.arim.morepaperlib.MorePaperLib morePaperLib;
+    private final MorePaperLib morePaperLib;
 
-    private final Map<UUID, space.arim.morepaperlib.scheduling.ScheduledTask> warmupTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, ScheduledTask> warmupTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Location> warmupStartLocations = new ConcurrentHashMap<>();
 
     public DefaultRtpService(
@@ -36,7 +38,7 @@ public class DefaultRtpService implements RtpService {
         this.safeLocationService = safeLocationService;
         this.cacheService = cacheService;
         this.economyProvider = economyProvider;
-        this.morePaperLib = new space.arim.morepaperlib.MorePaperLib(plugin);
+        this.morePaperLib = new MorePaperLib(plugin);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class DefaultRtpService implements RtpService {
         UUID uuid = player.getUniqueId();
         warmupStartLocations.put(uuid, player.getLocation().clone());
 
-        space.arim.morepaperlib.scheduling.ScheduledTask task = morePaperLib.scheduling().entityScheduler(player).runAtFixedRate(
+        ScheduledTask task = morePaperLib.scheduling().entitySpecificScheduler(player).runAtFixedRate(
             new Runnable() {
                 private final long startTime = System.currentTimeMillis();
                 private int lastCountdownValue = -1;
@@ -204,7 +206,7 @@ public class DefaultRtpService implements RtpService {
     }
 
     private void cancelWarmupTask(UUID uuid) {
-        space.arim.morepaperlib.scheduling.ScheduledTask task = warmupTasks.remove(uuid);
+        ScheduledTask task = warmupTasks.remove(uuid);
         if (task != null) {
             task.cancel();
         }
