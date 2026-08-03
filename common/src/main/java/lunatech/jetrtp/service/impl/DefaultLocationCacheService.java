@@ -4,6 +4,7 @@ import lunatech.jetrtp.AbstractJetRTP;
 import lunatech.jetrtp.config.RtpProfile;
 import lunatech.jetrtp.service.LocationCacheService;
 import lunatech.jetrtp.service.SafeLocationService;
+import lunatech.jetrtp.service.LagService;
 import org.bukkit.Location;
 import org.bukkit.World;
 import java.util.Map;
@@ -16,12 +17,14 @@ public class DefaultLocationCacheService implements LocationCacheService {
 
     private final AbstractJetRTP plugin;
     private final SafeLocationService safeLocationService;
+    private final LagService lagService;
     private final Map<String, Queue<Location>> cacheMap = new ConcurrentHashMap<>();
     private final Map<String, Boolean> refillingMap = new ConcurrentHashMap<>();
 
-    public DefaultLocationCacheService(AbstractJetRTP plugin, SafeLocationService safeLocationService) {
+    public DefaultLocationCacheService(AbstractJetRTP plugin, SafeLocationService safeLocationService, LagService lagService) {
         this.plugin = plugin;
         this.safeLocationService = safeLocationService;
+        this.lagService = lagService;
     }
 
     @Override
@@ -41,6 +44,11 @@ public class DefaultLocationCacheService implements LocationCacheService {
     @Override
     public void refillCacheAsync(RtpProfile profile) {
         if (!profile.enabled || profile.preparations.cacheLocations <= 0) {
+            return;
+        }
+
+        if (lagService.isLagging()) {
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> refillCacheAsync(profile), 200L);
             return;
         }
 
