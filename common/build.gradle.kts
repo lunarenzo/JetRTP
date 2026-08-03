@@ -20,7 +20,7 @@ dependencies {
         isTransitive = false
     }
     annotationProcessor(libs.configurate.interfaces.ap)
-    api(libs.colorparser.common) {
+    api(libs.colorparser.paper) {
         exclude("net.kyori")
     }
     api(libs.threadutil.common)

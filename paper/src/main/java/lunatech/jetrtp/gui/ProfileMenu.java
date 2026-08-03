@@ -94,13 +94,13 @@ public class ProfileMenu implements InventoryHolder {
         
         if (plugin.getRtpService().isOnCooldown(player, profile)) {
             long remaining = plugin.getRtpService().getRemainingCooldown(player, profile) / 1000L;
-            player.sendMessage("§cYou must wait " + remaining + " seconds before using RTP again.");
+            player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of("<red>You must wait " + remaining + " seconds before using RTP again.").build());
             return;
         }
         
         plugin.getRtpService().executeRtp(player, profile).thenAccept(success -> {
             if (!success) {
-                player.sendMessage("§cTeleportation could not be completed at this time.");
+                player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of("<red>Teleportation could not be completed at this time.").build());
             }
         });
     }

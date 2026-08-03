@@ -272,8 +272,8 @@ public class DefaultRtpService implements RtpService {
             java.time.Duration.ofMillis(fadeOutTicks * 50L)
         );
         player.showTitle(net.kyori.adventure.title.Title.title(
-            net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize(title),
-            net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacyAmpersand().deserialize(subtitle),
+            io.github.milkdrinkers.colorparser.paper.ColorParser.of(title).build(),
+            io.github.milkdrinkers.colorparser.paper.ColorParser.of(subtitle).build(),
             times
         ));
     }
