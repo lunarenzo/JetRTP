@@ -54,7 +54,7 @@ public final class RtpCommand extends Command {
             )
             .withSubcommand(new CommandAPICommand("force")
                 .withPermission("jakesrtp.admin.force")
-                .withArguments(new dev.jorel.commandapi.arguments.PlayerArgument("target"))
+                .withArguments(new dev.jorel.commandapi.arguments.EntitySelectorArgument.OnePlayer("target"))
                 .withOptionalArguments(
                     new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
                         return plugin.getConfigHandler().getProfiles().keySet().toArray(new String[0]);
