@@ -21,6 +21,14 @@ dependencies {
         exclude("net.kyori", "adventure-text-serializer-legacy")
         exclude("net.kyori", "adventure-text-serializer-plain")
     }
+    implementation("net.kyori:adventure-platform-bukkit:4.3.4") {
+        exclude("net.kyori", "adventure-api")
+        exclude("net.kyori", "adventure-key")
+        exclude("net.kyori", "adventure-text-serializer-gson")
+        exclude("net.kyori", "adventure-text-serializer-json")
+        exclude("net.kyori", "adventure-text-serializer-legacy")
+        exclude("net.kyori", "adventure-text-serializer-plain")
+    }
     api(libs.colorparser.paper) {
         exclude("net.kyori")
     }
