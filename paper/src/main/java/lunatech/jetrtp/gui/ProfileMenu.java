@@ -25,6 +25,7 @@ public class ProfileMenu implements InventoryHolder {
     private final AbstractJetRTP plugin;
     private final Map<Integer, RtpProfile> slotProfiles = new HashMap<>();
 
+    @SuppressWarnings("this-escape")
     public ProfileMenu(Player player, AbstractJetRTP plugin) {
         this.plugin = plugin;
         this.inventory = Bukkit.createInventory(this, 27, Component.text("Random Teleport Destinations", NamedTextColor.DARK_GRAY));
