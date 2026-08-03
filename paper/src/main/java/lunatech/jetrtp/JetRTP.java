@@ -40,6 +40,11 @@ public class JetRTP extends AbstractJetRTP {
     private CooldownHandler cooldownHandler;
     private JetRTPAPIProvider apiHandler;
 
+    // Services
+    private lunatech.jetrtp.service.SafeLocationService safeLocationService;
+    private lunatech.jetrtp.service.LocationCacheService cacheService;
+    private lunatech.jetrtp.service.RtpService rtpService;
+
     // Handlers list (defines order of load/enable/disable)
     private List<? extends Reloadable> handlers;
 
@@ -88,6 +93,16 @@ public class JetRTP extends AbstractJetRTP {
 
     @Override
     public void onEnable() {
+        // Initialize services
+        lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.service.impl.DefaultClaimService();
+        safeLocationService = new lunatech.jetrtp.service.impl.AsyncSafeLocationService(this, claimService);
+        cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService);
+        lunatech.jetrtp.hook.EconomyProvider economyProvider = new lunatech.jetrtp.hook.vault.VaultEconomyProvider();
+        rtpService = new lunatech.jetrtp.service.impl.DefaultRtpService(this, safeLocationService, cacheService, economyProvider);
+
+        // Start cache refills
+        cacheService.startRefillTask();
+
         for (Reloadable handler : handlers)
             handler.onEnable(instance);
 
@@ -104,6 +119,12 @@ public class JetRTP extends AbstractJetRTP {
 
     @Override
     public void onDisable() {
+        if (rtpService != null) {
+            rtpService.shutdown();
+        }
+        if (cacheService != null) {
+            cacheService.shutdown();
+        }
         for (Reloadable handler : handlers.reversed()) // If reverse doesn't work implement a new List with your desired disable order
             handler.onDisable(instance);
     }
@@ -132,5 +153,20 @@ public class JetRTP extends AbstractJetRTP {
 
     public @NotNull JetRTPAPI getApiHandler() {
         return apiHandler;
+    }
+
+    @Override
+    public @NotNull lunatech.jetrtp.service.SafeLocationService getSafeLocationService() {
+        return safeLocationService;
+    }
+
+    @Override
+    public @NotNull lunatech.jetrtp.service.LocationCacheService getCacheService() {
+        return cacheService;
+    }
+
+    @Override
+    public @NotNull lunatech.jetrtp.service.RtpService getRtpService() {
+        return rtpService;
     }
 }

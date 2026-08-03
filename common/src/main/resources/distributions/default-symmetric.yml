@@ -1,0 +1,15 @@
+shape: square
+center:
+  option: a
+  a: 'world spawn'
+  b: 'players current location'
+  c-custom:
+    x: 0
+    z: 0
+radius:
+  max: 2000
+  min: 1000
+gaussian-distribution:
+  enabled: false
+  shrink: 4
+  center: 0.25

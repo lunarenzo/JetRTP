@@ -42,6 +42,10 @@ public class CommandHandler implements Reloadable {
             .command()
             .withAliases()
             .register();
+
+        new RtpCommand(plugin, plugin.getRtpService())
+            .command()
+            .register();
     }
 
     @Override

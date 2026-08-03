@@ -26,4 +26,19 @@ public abstract class AbstractJetRTP extends JavaPlugin {
      * @return the config handler
      */
     public abstract @NotNull ConfigHandler getConfigHandler();
+
+    /**
+     * Gets safe location service.
+     */
+    public abstract @NotNull lunatech.jetrtp.service.SafeLocationService getSafeLocationService();
+
+    /**
+     * Gets location cache service.
+     */
+    public abstract @NotNull lunatech.jetrtp.service.LocationCacheService getCacheService();
+
+    /**
+     * Gets RTP service.
+     */
+    public abstract @NotNull lunatech.jetrtp.service.RtpService getRtpService();
 }
