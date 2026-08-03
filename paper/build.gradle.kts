@@ -64,6 +64,10 @@ tasks {
         dependsOn(shadowJar)
     }
 
+    jar {
+        enabled = false
+    }
+
     shadowJar {
         archiveClassifier.set("")
 
