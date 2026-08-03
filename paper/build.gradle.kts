@@ -12,7 +12,6 @@ dependencies {
     implementation(projects.common)
 
     // API
-    implementation(libs.commandapi.shade.paper)
     api(libs.colorparser.paper) {
         exclude("net.kyori")
     }
@@ -80,7 +79,6 @@ tasks {
         reloc("io.github.milkdrinkers.threadutil", "threadutil")
         reloc("org.snakeyaml", "snakeyaml")
         reloc("org.json", "json")
-        reloc("dev.jorel.commandapi", "commandapi")
         reloc("com.zaxxer.hikari", "hikaricp")
         reloc("org.bstats", "bstats")
 

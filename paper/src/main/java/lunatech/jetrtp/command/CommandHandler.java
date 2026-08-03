@@ -1,58 +1,41 @@
 package lunatech.jetrtp.command;
 
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIPaperConfig;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import lunatech.jetrtp.AbstractJetRTP;
 import lunatech.jetrtp.JetRTP;
 import lunatech.jetrtp.Reloadable;
+import java.util.List;
 
-/**
- * A class to handle registration of commands.
- */
 public class CommandHandler implements Reloadable {
     public static final String BASE_PERM = "jetrtp.command";
     private final JetRTP plugin;
 
-    /**
-     * Instantiates the Command handler.
-     *
-     * @param plugin the plugin
-     */
     public CommandHandler(JetRTP plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public void onLoad(AbstractJetRTP plugin) {
-        CommandAPI.onLoad(
-            new CommandAPIPaperConfig(plugin)
-                .silentLogs(true)
-        );
+        // No-op. Native command api does not need onLoad registry hooks.
     }
 
     @Override
     public void onEnable(AbstractJetRTP plugin) {
-        if (!CommandAPI.isLoaded())
-            return;
+        // Register commands natively via LifecycleEvents
+        this.plugin.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            var registrar = commands.registrar();
 
-        CommandAPI.onEnable();
+            var jetRtpCmd = new JetRTPCommand(plugin);
+            registrar.register(jetRtpCmd.build().build());
 
-        // Register commands here
-        new JetRTPCommand(plugin)
-            .command()
-            .withAliases()
-            .register();
-
-        new RtpCommand(plugin, plugin.getRtpService())
-            .command()
-            .register();
+            var rtpCmd = new RtpCommand(plugin, plugin.getRtpService());
+            // Register /rtp with its description and aliases [wild]
+            registrar.register(rtpCmd.build().build(), "Teleports you to a random safe location.", List.of("wild"));
+        });
     }
 
     @Override
     public void onDisable(AbstractJetRTP plugin) {
-        if (!CommandAPI.isLoaded())
-            return;
-
-        CommandAPI.onDisable();
+        // No-op. Native command api does not need manual cleanup.
     }
 }
