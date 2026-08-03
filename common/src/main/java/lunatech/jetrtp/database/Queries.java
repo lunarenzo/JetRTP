@@ -201,4 +201,78 @@ public final class Queries {
             }
         }
     }
+
+    /**
+     * Holds all queries related to location cache serialization.
+     */
+    public static final class LocationCache {
+        public static void save(List<lunatech.jetrtp.model.CachedLocation> locations) {
+            if (!DB.isStarted()) return;
+            String tablePrefix = DB.getHandler().getDatabaseConfig().getTablePrefix();
+            try (Connection con = DB.getConnection()) {
+                DSLContext context = DB.getContext(con);
+                context.execute("DELETE FROM \"" + tablePrefix + "location_cache\"");
+                if (locations.isEmpty()) return;
+
+                List<org.jooq.Query> queries = new ArrayList<>();
+                for (var loc : locations) {
+                    queries.add(
+                        context.insertInto(table(name(tablePrefix + "location_cache")),
+                            field(name("profile_name")),
+                            field(name("world_name")),
+                            field(name("x")),
+                            field(name("y")),
+                            field(name("z")),
+                            field(name("yaw")),
+                            field(name("pitch"))
+                        ).values(
+                            loc.profileName(),
+                            loc.worldName(),
+                            loc.x(),
+                            loc.y(),
+                            loc.z(),
+                            loc.yaw(),
+                            loc.pitch()
+                        )
+                    );
+                }
+                context.batch(queries).execute();
+            } catch (SQLException e) {
+                Logger.get().error("Failed to save location cache to database: " + e.getMessage());
+            }
+        }
+
+        public static List<lunatech.jetrtp.model.CachedLocation> load() {
+            if (!DB.isStarted()) return Collections.emptyList();
+            String tablePrefix = DB.getHandler().getDatabaseConfig().getTablePrefix();
+            List<lunatech.jetrtp.model.CachedLocation> list = new ArrayList<>();
+            try (Connection con = DB.getConnection()) {
+                DSLContext context = DB.getContext(con);
+                Result<Record> records = context.select(
+                    field(name("profile_name")),
+                    field(name("world_name")),
+                    field(name("x")),
+                    field(name("y")),
+                    field(name("z")),
+                    field(name("yaw")),
+                    field(name("pitch"))
+                ).from(table(name(tablePrefix + "location_cache"))).fetch();
+
+                for (Record r : records) {
+                    list.add(new lunatech.jetrtp.model.CachedLocation(
+                        r.get("profile_name", String.class),
+                        r.get("world_name", String.class),
+                        r.get("x", Double.class),
+                        r.get("y", Double.class),
+                        r.get("z", Double.class),
+                        r.get("yaw", Float.class),
+                        r.get("pitch", Float.class)
+                    ));
+                }
+            } catch (SQLException e) {
+                Logger.get().error("Failed to load location cache from database: " + e.getMessage());
+            }
+            return list;
+        }
+    }
 }

@@ -116,6 +116,9 @@ public class RtpProfile implements VersionedConfig {
         public int cacheLocations = 10;
     }
 
+    @Setting("excluded-biomes")
+    public List<String> excludedBiomes = new ArrayList<>();
+
     @Setting("prefer-sync-tp")
     public PreferSyncTp preferSyncTp = new PreferSyncTp();
 

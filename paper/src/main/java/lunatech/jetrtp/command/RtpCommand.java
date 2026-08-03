@@ -92,6 +92,40 @@ public final class RtpCommand extends Command {
                         }
                     });
                 })
+            )
+            .withSubcommand(new CommandAPICommand("info")
+                .withPermission("jakesrtp.admin.info")
+                .withOptionalArguments(
+                    new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                        return plugin.getConfigHandler().getProfiles().keySet().toArray(new String[0]);
+                    }))
+                )
+                .executes((sender, args) -> {
+                    String profileName = (String) args.get("profile");
+                    if (profileName != null) {
+                        RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
+                        if (profile == null) {
+                            sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                            return;
+                        }
+                        sender.sendMessage("§8=== §aJetRTP Profile Info: " + profile.name + " §8===");
+                        sender.sendMessage("§7Enabled: §f" + profile.enabled);
+                        sender.sendMessage("§7Landing World: §f" + profile.landingWorld);
+                        sender.sendMessage("§7Cache Size: §f" + plugin.getCacheService().getCacheSize(profile) + " / " + profile.preparations.cacheLocations);
+                        sender.sendMessage("§7Cooldown Time: §f" + profile.cooldown + "s");
+                        sender.sendMessage("§7Cost: §f$" + profile.cost);
+                        sender.sendMessage("§7Bounds: §fY " + profile.bounds.low + " to " + profile.bounds.high);
+                        sender.sendMessage("§7Excluded Biomes: §f" + String.join(", ", profile.excludedBiomes));
+                    } else {
+                        sender.sendMessage("§8=== §aJetRTP General Info §8===");
+                        sender.sendMessage("§7Loaded Profiles: §f" + plugin.getConfigHandler().getProfiles().size());
+                        sender.sendMessage("§7Database Active: §f" + lunatech.jetrtp.utility.DB.isStarted());
+                        for (RtpProfile profile : plugin.getConfigHandler().getProfiles().values()) {
+                            int size = plugin.getCacheService().getCacheSize(profile);
+                            sender.sendMessage("§8- §a" + profile.name + "§7: Cache = §f" + size + "/" + profile.preparations.cacheLocations);
+                        }
+                    }
+                })
             );
     }
 
