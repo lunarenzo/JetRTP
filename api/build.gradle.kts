@@ -9,7 +9,7 @@ plugins {
 
 mavenPublishing {
     coordinates(
-        groupId = "io.github.exampleuser",
+        groupId = "lunatech",
         artifactId = base.archivesName.get().lowercase(),
         version = version.toString().let { originalVersion ->
             if (!originalVersion.contains("-SNAPSHOT"))
@@ -22,7 +22,7 @@ mavenPublishing {
     pom {
         name.set(base.archivesName.get().split("-").map { it.capitalized() }.joinToString("-"))
         description.set(rootProject.description.orEmpty())
-        url.set("https://github.com/exampleuser/Example")
+        url.set("https://github.com/jetrtpuser/JetRTP")
         inceptionYear.set("2026")
 
         licenses {
@@ -35,17 +35,17 @@ mavenPublishing {
 
         developers {
             developer {
-                id.set("exampleuser")
-                name.set("exampleuser")
-                url.set("https://github.com/exampleuser")
-                organization.set("ExampleUser")
+                id.set("jetrtpuser")
+                name.set("jetrtpuser")
+                url.set("https://github.com/jetrtpuser")
+                organization.set("JetRTPUser")
             }
         }
 
         scm {
-            url.set("https://github.com/exampleuser/Example")
-            connection.set("scm:git:git://github.com/exampleuser/Example.git")
-            developerConnection.set("scm:git:ssh://github.com:exampleuser/Example.git")
+            url.set("https://github.com/jetrtpuser/JetRTP")
+            connection.set("scm:git:git://github.com/jetrtpuser/JetRTP.git")
+            developerConnection.set("scm:git:ssh://github.com:jetrtpuser/JetRTP.git")
         }
     }
 
