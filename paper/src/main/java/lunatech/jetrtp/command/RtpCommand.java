@@ -3,7 +3,7 @@ package lunatech.jetrtp.command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.milkdrinkers.colorparser.paper.ColorParser;
-import io.github.milkdrinkers.wordweaver.Translation;
+import lunatech.jetrtp.translation.Translation;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lunatech.jetrtp.AbstractJetRTP;

@@ -10,7 +10,7 @@ import io.github.milkdrinkers.javasemver.Version;
 import io.github.milkdrinkers.javasemver.exception.VersionParseException;
 import io.github.milkdrinkers.versionwatch.Platform;
 import io.github.milkdrinkers.versionwatch.VersionWatcher;
-import io.github.milkdrinkers.wordweaver.Translation;
+import lunatech.jetrtp.translation.Translation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

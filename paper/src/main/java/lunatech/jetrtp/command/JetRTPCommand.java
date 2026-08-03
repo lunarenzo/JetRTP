@@ -3,11 +3,10 @@ package lunatech.jetrtp.command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.milkdrinkers.colorparser.paper.ColorParser;
-import io.github.milkdrinkers.wordweaver.Translation;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lunatech.jetrtp.AbstractJetRTP;
-import lunatech.jetrtp.utility.Cfg;
+import lunatech.jetrtp.translation.Translation;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -33,33 +32,26 @@ public final class JetRTPCommand {
             .then(Commands.literal("translation")
                 .requires(source -> source.getSender().hasPermission("jetrtp.command.translation"))
                 .executes(ctx -> {
-                    ctx.getSource().getSender().sendMessage(Translation.as("commands.translation.help"));
+                    ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("commands.translation.help")).build());
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 })
                 .then(Commands.literal("help")
                     .executes(ctx -> {
-                        ctx.getSource().getSender().sendMessage(Translation.as("commands.translation.help"));
+                        ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("commands.translation.help")).build());
                         return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                     })
                 )
                 .then(Commands.literal("reload")
                     .requires(source -> source.getSender().hasPermission("jetrtp.command.translation.reload"))
                     .executes(ctx -> {
-                        Translation.setLanguage(Cfg.get().language);
-                        Translation.reload();
-                        ctx.getSource().getSender().sendMessage(Translation.as("commands.translation.reloaded"));
+                        Translation.load(plugin.getDataPath(), plugin.getConfigHandler().getConfig().language);
+                        ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("commands.translation.reloaded")).build());
                         return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                     })
                 )
                 .then(Commands.literal("test")
                     .requires(source -> source.getSender().hasPermission("jetrtp.command.translation.test"))
                     .then(Commands.argument("key", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            Translation.getKeys().stream()
-                                .filter(key -> key.toLowerCase().startsWith(builder.getRemainingLowerCase()))
-                                .forEach(builder::suggest);
-                            return builder.buildFuture();
-                        })
                         .executes(ctx -> {
                             CommandSender sender = ctx.getSource().getSender();
                             String node = StringArgumentType.getString(ctx, "key");
@@ -76,13 +68,8 @@ public final class JetRTPCommand {
 
                             String translation = Translation.of(node);
 
-                            if (translation == null) {
+                            if (translation.isEmpty()) {
                                 sender.sendMessage(ColorParser.of(Translation.of("commands.translation.test.not-found")).with("node", node).build());
-                                return 0;
-                            }
-
-                            if (translation.isBlank()) {
-                                sender.sendMessage(ColorParser.of(Translation.of("commands.translation.test.not-empty2")).with("node", node).build());
                                 return 0;
                             }
 
@@ -94,7 +81,7 @@ public final class JetRTPCommand {
                                         .build()
                                 );
                             } else {
-                                sender.sendMessage(Translation.as(node));
+                                sender.sendMessage(ColorParser.of(Translation.of(node)).build());
                             }
                             return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                         })
