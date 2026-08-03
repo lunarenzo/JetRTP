@@ -99,7 +99,8 @@ public class JetRTP extends AbstractJetRTP {
         // Initialize services
         lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.hook.claims.PaperClaimService(this);
         safeLocationService = new lunatech.jetrtp.service.impl.AsyncSafeLocationService(this, claimService);
-        cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService);
+        lunatech.jetrtp.service.LagService lagService = new lunatech.jetrtp.service.impl.PaperLagService();
+        cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService, lagService);
         lunatech.jetrtp.hook.EconomyProvider economyProvider = new lunatech.jetrtp.hook.vault.VaultEconomyProvider();
         rtpService = new lunatech.jetrtp.service.impl.DefaultRtpService(this, safeLocationService, cacheService, economyProvider);
 
