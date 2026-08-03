@@ -54,44 +54,88 @@ public final class RtpCommand extends Command {
             )
             .withSubcommand(new CommandAPICommand("force")
                 .withPermission("jakesrtp.admin.force")
-                .withArguments(new dev.jorel.commandapi.arguments.EntitySelectorArgument.OnePlayer("target"))
-                .withOptionalArguments(
-                    new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                .withSubcommand(new CommandAPICommand("config")
+                    .withArguments(new dev.jorel.commandapi.arguments.EntitySelectorArgument.OnePlayer("target"))
+                    .withArguments(new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
                         return plugin.getConfigHandler().getProfiles().keySet().toArray(new String[0]);
-                    }))
-                )
-                .executes((sender, args) -> {
-                    Player target = (Player) args.get("target");
-                    if (target == null) {
-                        sender.sendMessage("§cTarget player not found.");
-                        return;
-                    }
-                    String profileName = (String) args.get("profile");
-                    RtpProfile profile;
-                    if (profileName != null) {
-                        profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
+                    })))
+                    .executes((sender, args) -> {
+                        Player target = (Player) args.get("target");
+                        if (target == null) {
+                            sender.sendMessage("§cTarget player not found.");
+                            return;
+                        }
+                        String profileName = (String) args.get("profile");
+                        RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
                         if (profile == null) {
                             sender.sendMessage("§cUnknown RTP profile: " + profileName);
                             return;
                         }
-                    } else {
-                        profile = plugin.getConfigHandler().getProfiles().values().stream()
-                            .filter(p -> p.enabled && p.commandEnabled)
-                            .findFirst().orElse(null);
-                    }
-                    if (profile == null) {
-                        sender.sendMessage("§cNo RTP profile could be resolved.");
-                        return;
-                    }
-                    sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " using profile " + profile.name);
-                    rtpService.executeRtp(target, profile).thenAccept(success -> {
-                        if (success) {
-                            sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
-                        } else {
-                            sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                        sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " using profile " + profile.name);
+                        rtpService.executeRtp(target, profile).thenAccept(success -> {
+                            if (success) {
+                                sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
+                            } else {
+                                sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                            }
+                        });
+                    })
+                )
+                .withSubcommand(new CommandAPICommand("world")
+                    .withArguments(new dev.jorel.commandapi.arguments.EntitySelectorArgument.OnePlayer("target"))
+                    .withArguments(new StringArgument("world").replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                        return plugin.getServer().getWorlds().stream().map(org.bukkit.World::getName).toArray(String[]::new);
+                    })))
+                    .executes((sender, args) -> {
+                        Player target = (Player) args.get("target");
+                        if (target == null) {
+                            sender.sendMessage("§cTarget player not found.");
+                            return;
                         }
-                    });
-                })
+                        String worldName = (String) args.get("world");
+                        RtpProfile profile = plugin.getConfigHandler().getProfiles().values().stream()
+                            .filter(p -> p.landingWorld.equalsIgnoreCase(worldName))
+                            .findFirst().orElse(null);
+
+                        if (profile == null) {
+                            RtpProfile defaultProfile = plugin.getConfigHandler().getProfiles().get("default-settings");
+                            if (defaultProfile == null) {
+                                defaultProfile = plugin.getConfigHandler().getProfiles().values().stream().findFirst().orElse(null);
+                            }
+                            if (defaultProfile != null) {
+                                try {
+                                    profile = new RtpProfile();
+                                    profile.name = defaultProfile.name;
+                                    profile.bounds = defaultProfile.bounds;
+                                    profile.checkRadius = defaultProfile.checkRadius;
+                                    profile.distribution = defaultProfile.distribution;
+                                    profile.landingWorld = worldName;
+                                    profile.maxAttempts = defaultProfile.maxAttempts;
+                                    profile.preparations = defaultProfile.preparations;
+                                    profile.warmup = defaultProfile.warmup;
+                                    profile.thenExecute = defaultProfile.thenExecute;
+                                    profile.cost = 0;
+                                } catch (Exception e) {
+                                    profile = defaultProfile;
+                                }
+                            }
+                        }
+
+                        if (profile == null) {
+                            sender.sendMessage("§cNo RTP profile could be resolved.");
+                            return;
+                        }
+
+                        sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " landing in world " + worldName);
+                        rtpService.executeRtp(target, profile).thenAccept(success -> {
+                            if (success) {
+                                sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
+                            } else {
+                                sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                            }
+                        });
+                    })
+                )
             )
             .withSubcommand(new CommandAPICommand("info")
                 .withPermission("jakesrtp.admin.info")
