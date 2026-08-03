@@ -57,7 +57,7 @@ public class PlayerRtpEventListener implements Listener {
             return;
         }
 
-        if (cfg.rtpOnDeath.respectAnchors && event.getRespawnReason() == PlayerRespawnEvent.RespawnReason.RESPAWN_ANCHOR) {
+        if (cfg.rtpOnDeath.respectAnchors && event.getRespawnReason().name().equals("RESPAWN_ANCHOR")) {
             return;
         }
 
