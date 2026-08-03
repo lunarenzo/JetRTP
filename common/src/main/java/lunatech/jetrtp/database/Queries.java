@@ -248,7 +248,7 @@ public final class Queries {
             List<lunatech.jetrtp.model.CachedLocation> list = new ArrayList<>();
             try (Connection con = DB.getConnection()) {
                 DSLContext context = DB.getContext(con);
-                Result<org.jooq.Record> records = context.select(
+                var records = context.select(
                     field(name("profile_name")),
                     field(name("world_name")),
                     field(name("x")),
@@ -258,7 +258,7 @@ public final class Queries {
                     field(name("pitch"))
                 ).from(table(name(tablePrefix + "location_cache"))).fetch();
 
-                for (org.jooq.Record r : records) {
+                for (var r : records) {
                     list.add(new lunatech.jetrtp.model.CachedLocation(
                         r.get("profile_name", String.class),
                         r.get("world_name", String.class),
