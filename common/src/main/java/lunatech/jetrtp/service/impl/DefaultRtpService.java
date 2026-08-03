@@ -21,8 +21,9 @@ public class DefaultRtpService implements RtpService {
     private final SafeLocationService safeLocationService;
     private final LocationCacheService cacheService;
     private final EconomyProvider economyProvider;
+    private final space.arim.morepaperlib.MorePaperLib morePaperLib;
 
-    private final Map<UUID, Integer> warmupTasks = new ConcurrentHashMap<>();
+    private final Map<UUID, space.arim.morepaperlib.scheduling.ScheduledTask> warmupTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Location> warmupStartLocations = new ConcurrentHashMap<>();
 
     public DefaultRtpService(
@@ -35,6 +36,7 @@ public class DefaultRtpService implements RtpService {
         this.safeLocationService = safeLocationService;
         this.cacheService = cacheService;
         this.economyProvider = economyProvider;
+        this.morePaperLib = new space.arim.morepaperlib.MorePaperLib(plugin);
     }
 
     @Override
@@ -73,54 +75,62 @@ public class DefaultRtpService implements RtpService {
         UUID uuid = player.getUniqueId();
         warmupStartLocations.put(uuid, player.getLocation().clone());
 
-        int taskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-            private final long startTime = System.currentTimeMillis();
-            private int lastCountdownValue = -1;
+        space.arim.morepaperlib.scheduling.ScheduledTask task = morePaperLib.scheduling().entityScheduler(player).runAtFixedRate(
+            new Runnable() {
+                private final long startTime = System.currentTimeMillis();
+                private int lastCountdownValue = -1;
 
-            @Override
-            public void run() {
-                if (!player.isOnline()) {
-                    cancelWarmupTask(uuid);
-                    future.complete(false);
-                    return;
-                }
-
-                if (profile.warmup.cancelOnMove) {
-                    Location startLoc = warmupStartLocations.get(uuid);
-                    if (startLoc != null && (!startLoc.getWorld().equals(player.getWorld()) || startLoc.distanceSquared(player.getLocation()) > 1.0)) {
-                        cancelWarmup(player);
+                @Override
+                public void run() {
+                    if (!player.isOnline()) {
+                        cancelWarmupTask(uuid);
                         future.complete(false);
                         return;
                     }
-                }
 
-                int elapsed = (int) ((System.currentTimeMillis() - startTime) / 1000L);
-                int remaining = profile.warmup.time - elapsed;
+                    if (profile.warmup.cancelOnMove) {
+                        Location startLoc = warmupStartLocations.get(uuid);
+                        if (startLoc != null && (!startLoc.getWorld().equals(player.getWorld()) || startLoc.distanceSquared(player.getLocation()) > 1.0)) {
+                            cancelWarmup(player);
+                            future.complete(false);
+                            return;
+                        }
+                    }
 
-                if (remaining <= 0) {
-                    cancelWarmupTask(uuid);
-                    performTeleportation(player, profile, future);
-                } else {
-                    if (profile.warmup.countDown && remaining != lastCountdownValue) {
-                        lastCountdownValue = remaining;
-                        String title = profile.warmup.titleCountdown.replace('&', '§');
-                        String subtitle = profile.warmup.subtitleCountdown.replace('&', '§').replace("%time%", String.valueOf(remaining));
-                        player.sendTitle(title, subtitle, 0, 20, 5);
+                    int elapsed = (int) ((System.currentTimeMillis() - startTime) / 1000L);
+                    int remaining = profile.warmup.time - elapsed;
 
-                        try {
-                            org.bukkit.Sound sound = org.bukkit.Sound.valueOf(profile.warmup.soundCountdown.toUpperCase());
-                            float pitch = 1.0f;
-                            if (profile.warmup.soundCountdownPitchIncrease) {
-                                pitch = 0.8f + (float) (profile.warmup.time - remaining) * 0.15f;
-                            }
-                            player.playSound(player.getLocation(), sound, 0.6f, pitch);
-                        } catch (Exception ignored) {}
+                    if (remaining <= 0) {
+                        cancelWarmupTask(uuid);
+                        performTeleportation(player, profile, future);
+                    } else {
+                        if (profile.warmup.countDown && remaining != lastCountdownValue) {
+                            lastCountdownValue = remaining;
+                            String title = profile.warmup.titleCountdown.replace('&', '§');
+                            String subtitle = profile.warmup.subtitleCountdown.replace('&', '§').replace("%time%", String.valueOf(remaining));
+                            player.sendTitle(title, subtitle, 0, 20, 5);
+
+                            try {
+                                org.bukkit.Sound sound = org.bukkit.Sound.valueOf(profile.warmup.soundCountdown.toUpperCase());
+                                float pitch = 1.0f;
+                                if (profile.warmup.soundCountdownPitchIncrease) {
+                                    pitch = 0.8f + (float) (profile.warmup.time - remaining) * 0.15f;
+                                }
+                                player.playSound(player.getLocation(), sound, 0.6f, pitch);
+                            } catch (Exception ignored) {}
+                        }
                     }
                 }
-            }
-        }, 2L, 20L);
+            },
+            () -> {
+                // retired callback
+                cancelWarmupTask(uuid);
+            },
+            2L,
+            20L
+        );
 
-        warmupTasks.put(uuid, taskId);
+        warmupTasks.put(uuid, task);
     }
 
     private void performTeleportation(Player player, RtpProfile profile, CompletableFuture<Boolean> future) {
@@ -194,9 +204,9 @@ public class DefaultRtpService implements RtpService {
     }
 
     private void cancelWarmupTask(UUID uuid) {
-        Integer taskId = warmupTasks.remove(uuid);
-        if (taskId != null) {
-            plugin.getServer().getScheduler().cancelTask(taskId);
+        space.arim.morepaperlib.scheduling.ScheduledTask task = warmupTasks.remove(uuid);
+        if (task != null) {
+            task.cancel();
         }
         warmupStartLocations.remove(uuid);
     }

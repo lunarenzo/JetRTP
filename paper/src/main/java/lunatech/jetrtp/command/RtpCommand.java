@@ -42,7 +42,57 @@ public final class RtpCommand extends Command {
                     return suggestions.toArray(new String[0]);
                 }))
             )
-            .executesPlayer(this::executeRtp);
+            .executesPlayer(this::executeRtp)
+            .withSubcommand(new CommandAPICommand("reload")
+                .withPermission("jakesrtp.admin.reload")
+                .executes((sender, args) -> {
+                    if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
+                        jetRtp.onReload();
+                    }
+                    sender.sendMessage("§aJetRTP profiles and configuration reloaded.");
+                })
+            )
+            .withSubcommand(new CommandAPICommand("force")
+                .withPermission("jakesrtp.admin.force")
+                .withArguments(new dev.jorel.commandapi.arguments.PlayerArgument("target"))
+                .withOptionalArguments(
+                    new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                        return plugin.getConfigHandler().getProfiles().keySet().toArray(new String[0]);
+                    }))
+                )
+                .executes((sender, args) -> {
+                    Player target = (Player) args.get("target");
+                    if (target == null) {
+                        sender.sendMessage("§cTarget player not found.");
+                        return;
+                    }
+                    String profileName = (String) args.get("profile");
+                    RtpProfile profile;
+                    if (profileName != null) {
+                        profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
+                        if (profile == null) {
+                            sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                            return;
+                        }
+                    } else {
+                        profile = plugin.getConfigHandler().getProfiles().values().stream()
+                            .filter(p -> p.enabled && p.commandEnabled)
+                            .findFirst().orElse(null);
+                    }
+                    if (profile == null) {
+                        sender.sendMessage("§cNo RTP profile could be resolved.");
+                        return;
+                    }
+                    sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " using profile " + profile.name);
+                    rtpService.executeRtp(target, profile).thenAccept(success -> {
+                        if (success) {
+                            sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
+                        } else {
+                            sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                        }
+                    });
+                })
+            );
     }
 
     private void executeRtp(Player player, CommandArguments args) {
@@ -59,15 +109,8 @@ public final class RtpCommand extends Command {
                 return;
             }
         } else {
-            profile = plugin.getConfigHandler().getProfiles().values().stream()
-                .filter(p -> p.enabled && p.commandEnabled && (
-                    !p.requireExplicitPermission || player.hasPermission("jakesrtp.use." + p.name.toLowerCase())
-                ))
-                .findFirst().orElse(null);
-
-            if (profile == null) {
-                profile = plugin.getConfigHandler().getProfiles().get("default-settings");
-            }
+            lunatech.jetrtp.gui.ProfileMenu.open(player, plugin);
+            return;
         }
 
         if (profile == null) {
