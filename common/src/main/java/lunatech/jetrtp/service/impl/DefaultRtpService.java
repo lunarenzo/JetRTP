@@ -106,17 +106,17 @@ public class DefaultRtpService implements RtpService {
                     } else {
                         if (profile.warmup.countDown && remaining != lastCountdownValue) {
                             lastCountdownValue = remaining;
-                            String title = profile.warmup.titleCountdown.replace('&', '§');
-                            String subtitle = profile.warmup.subtitleCountdown.replace('&', '§').replace("%time%", String.valueOf(remaining));
-                            player.sendTitle(title, subtitle, 0, 20, 5);
+                            showTitle(player, profile.warmup.titleCountdown, profile.warmup.subtitleCountdown.replace("%time%", String.valueOf(remaining)), 0, 20, 5);
 
                             try {
-                                org.bukkit.Sound sound = org.bukkit.Sound.valueOf(profile.warmup.soundCountdown.toUpperCase());
-                                float pitch = 1.0f;
-                                if (profile.warmup.soundCountdownPitchIncrease) {
-                                    pitch = 0.8f + (float) (profile.warmup.time - remaining) * 0.15f;
+                                org.bukkit.Sound sound = getSound(profile.warmup.soundCountdown);
+                                if (sound != null) {
+                                    float pitch = 1.0f;
+                                    if (profile.warmup.soundCountdownPitchIncrease) {
+                                        pitch = 0.8f + (float) (profile.warmup.time - remaining) * 0.15f;
+                                    }
+                                    player.playSound(player.getLocation(), sound, 0.6f, pitch);
                                 }
-                                player.playSound(player.getLocation(), sound, 0.6f, pitch);
                             } catch (Exception ignored) {}
                         }
                     }
@@ -174,17 +174,17 @@ public class DefaultRtpService implements RtpService {
             economyProvider.withdraw(player, profile.cost);
         }
 
-        String title = profile.warmup.titleSuccess.replace('&', '§');
-        String subtitle = profile.warmup.subtitleSuccess.replace('&', '§');
-        player.sendTitle(title, subtitle, 5, 45, 15);
+        showTitle(player, profile.warmup.titleSuccess, profile.warmup.subtitleSuccess, 5, 45, 15);
 
         for (String soundStr : profile.warmup.soundsSuccess) {
             try {
                 String[] parts = soundStr.split(":");
-                org.bukkit.Sound sound = org.bukkit.Sound.valueOf(parts[0].toUpperCase());
-                float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
-                float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-                player.playSound(player.getLocation(), sound, volume, pitch);
+                org.bukkit.Sound sound = getSound(parts[0]);
+                if (sound != null) {
+                    float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
+                    float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
+                    player.playSound(player.getLocation(), sound, volume, pitch);
+                }
             } catch (Exception ignored) {}
         }
 
@@ -236,17 +236,17 @@ public class DefaultRtpService implements RtpService {
             cancelWarmupTask(uuid);
             RtpProfile profile = plugin.getConfigHandler().getProfiles().values().stream().findFirst().orElse(null);
             if (profile != null) {
-                String title = profile.warmup.titleCancel.replace('&', '§');
-                String subtitle = profile.warmup.subtitleCancel.replace('&', '§');
-                player.sendTitle(title, subtitle, 5, 40, 15);
+                showTitle(player, profile.warmup.titleCancel, profile.warmup.subtitleCancel, 5, 40, 15);
 
                 for (String soundStr : profile.warmup.soundsCancel) {
                     try {
                         String[] parts = soundStr.split(":");
-                        org.bukkit.Sound sound = org.bukkit.Sound.valueOf(parts[0].toUpperCase());
-                        float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
-                        float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
-                        player.playSound(player.getLocation(), sound, volume, pitch);
+                        org.bukkit.Sound sound = getSound(parts[0]);
+                        if (sound != null) {
+                            float volume = parts.length > 1 ? Float.parseFloat(parts[1]) : 1.0f;
+                            float pitch = parts.length > 2 ? Float.parseFloat(parts[2]) : 1.0f;
+                            player.playSound(player.getLocation(), sound, volume, pitch);
+                        }
                     } catch (Exception ignored) {}
                 }
             }
@@ -263,5 +263,36 @@ public class DefaultRtpService implements RtpService {
         for (UUID uuid : warmupTasks.keySet()) {
             cancelWarmupTask(uuid);
         }
+    }
+
+    private void showTitle(Player player, String title, String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
+        net.kyori.adventure.title.Title.Times times = net.kyori.adventure.title.Title.Times.times(
+            java.time.Duration.ofMillis(fadeInTicks * 50L),
+            java.time.Duration.ofMillis(stayTicks * 50L),
+            java.time.Duration.ofMillis(fadeOutTicks * 50L)
+        );
+        player.showTitle(net.kyori.adventure.title.Title.title(
+            io.github.milkdrinkers.colorparser.paper.ColorParser.of(title).build(),
+            io.github.milkdrinkers.colorparser.paper.ColorParser.of(subtitle).build(),
+            times
+        ));
+    }
+
+    @SuppressWarnings("removal")
+    private org.bukkit.Sound getSound(String soundName) {
+        if (soundName == null) return null;
+        try {
+            org.bukkit.NamespacedKey key = soundName.contains(":") 
+                ? org.bukkit.NamespacedKey.fromString(soundName.toLowerCase()) 
+                : org.bukkit.NamespacedKey.minecraft(soundName.toLowerCase().replace("_", "."));
+            if (key != null) {
+                org.bukkit.Sound sound = org.bukkit.Registry.SOUNDS.get(key);
+                if (sound != null) return sound;
+            }
+        } catch (Exception ignored) {}
+        try {
+            return org.bukkit.Sound.valueOf(soundName.toUpperCase());
+        } catch (Exception ignored) {}
+        return null;
     }
 }
