@@ -385,3 +385,7 @@ fleet.local.yaml
 ##############################
 
 .DS_Store
+
+# Local/private documentation
+dev-docs/
+

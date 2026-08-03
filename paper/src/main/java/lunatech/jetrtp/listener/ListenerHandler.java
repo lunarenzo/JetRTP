@@ -27,7 +27,7 @@ public class ListenerHandler implements Reloadable {
     @Override
     public void onEnable(AbstractJetRTP plugin) {
         listeners.clear(); // Clear the list to avoid duplicate listeners when reloading the plugin
-//        listeners.add(new JetRTPListener());
+        listeners.add(new lunatech.jetrtp.listener.PlayerWarmupListener(plugin.getRtpService()));
 
         // Register listeners here
         for (Listener listener : listeners) {

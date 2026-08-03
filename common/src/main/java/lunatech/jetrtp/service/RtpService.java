@@ -1,0 +1,62 @@
+package lunatech.jetrtp.service;
+
+import lunatech.jetrtp.config.RtpProfile;
+import org.bukkit.entity.Player;
+import java.util.concurrent.CompletableFuture;
+
+public interface RtpService {
+    /**
+     * Executes the RTP process for a player. Handles warmups, charges, and coordinate checks.
+     *
+     * @param player the player to teleport
+     * @param profile the settings profile to use
+     * @return a future completing with true if teleported, false otherwise
+     */
+    CompletableFuture<Boolean> executeRtp(Player player, RtpProfile profile);
+
+    /**
+     * Checks if the player is currently on cooldown for the profile.
+     *
+     * @param player the player
+     * @param profile the settings profile
+     * @return true if on cooldown, false otherwise
+     */
+    boolean isOnCooldown(Player player, RtpProfile profile);
+
+    /**
+     * Gets the remaining cooldown time in milliseconds.
+     *
+     * @param player the player
+     * @param profile the settings profile
+     * @return remaining time in millis
+     */
+    long getRemainingCooldown(Player player, RtpProfile profile);
+
+    /**
+     * Starts the teleportation warmup for a player.
+     *
+     * @param player the player
+     * @param profile the settings profile
+     */
+    void startWarmup(Player player, RtpProfile profile);
+
+    /**
+     * Cancels any active warmup for a player.
+     *
+     * @param player the player
+     */
+    void cancelWarmup(Player player);
+
+    /**
+     * Checks if the player has an active warmup scheduled.
+     *
+     * @param player the player
+     * @return true if warmup is active, false otherwise
+     */
+    boolean hasActiveWarmup(Player player);
+
+    /**
+     * Shuts down active warmups and clears state.
+     */
+    void shutdown();
+}

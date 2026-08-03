@@ -7,7 +7,11 @@ import lunatech.jetrtp.config.typeserializer.StringListSerializer;
 import lunatech.jetrtp.config.typeserializer.StringObjectMapSerializer;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A class that generates/loads {@literal &} provides access to a configuration file.
@@ -19,6 +23,9 @@ public class ConfigHandler implements Reloadable {
 
     private PluginConfig cfg;
     private DatabaseConfig databaseCfg;
+
+    private final Map<String, RtpProfile> profiles = new ConcurrentHashMap<>();
+    private final Map<String, DistributionConfig> distributions = new ConcurrentHashMap<>();
 
     /**
      * Instantiates a new Config handler.
@@ -39,6 +46,34 @@ public class ConfigHandler implements Reloadable {
 
     @Override
     public void onLoad(AbstractJetRTP plugin) {
+        // Save default directories and files if they do not exist
+        try {
+            Path rtpSettingsDir = configDir.resolve("rtpSettings");
+            Path distributionsDir = configDir.resolve("distributions");
+            if (!Files.exists(rtpSettingsDir)) {
+                Files.createDirectories(rtpSettingsDir);
+            }
+            if (!Files.exists(distributionsDir)) {
+                Files.createDirectories(distributionsDir);
+            }
+
+            File defaultRtp = rtpSettingsDir.resolve("default-settings.yml").toFile();
+            if (!defaultRtp.exists()) {
+                plugin.saveResource("rtpSettings/default-settings.yml", false);
+            }
+            File defaultSym = distributionsDir.resolve("default-symmetric.yml").toFile();
+            if (!defaultSym.exists()) {
+                plugin.saveResource("distributions/default-symmetric.yml", false);
+            }
+            File defaultRect = distributionsDir.resolve("default-rectangle.yml").toFile();
+            if (!defaultRect.exists()) {
+                plugin.saveResource("distributions/default-rectangle.yml", false);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to copy default configuration resources", e);
+        }
+
+        // Load config.yml
         cfg = new ConfigLoader()
             .withLogger(logger)
             .withDirectory()
@@ -46,6 +81,7 @@ public class ConfigHandler implements Reloadable {
             .withHeader("")
             .build(PluginConfig.class);
 
+        // Load database.yml
         databaseCfg = new ConfigLoader()
             .withLogger(logger)
             .withDirectory()
@@ -56,6 +92,39 @@ public class ConfigHandler implements Reloadable {
                     .registerExact(StringObjectMapSerializer.TYPE_TOKEN, StringObjectMapSerializer.INSTANCE);
             })
             .build(DatabaseConfig.class);
+
+        // Load rtpSettings profiles
+        profiles.clear();
+        File[] rtpFiles = configDir.resolve("rtpSettings").toFile().listFiles((dir, name) -> name.endsWith(".yml"));
+        if (rtpFiles != null) {
+            for (File f : rtpFiles) {
+                String profileName = f.getName().substring(0, f.getName().length() - 4);
+                RtpProfile profile = new ConfigLoader()
+                    .withLogger(logger)
+                    .withPath(f.toPath())
+                    .build(RtpProfile.class);
+                if (profile != null) {
+                    profile.name = profileName;
+                    profiles.put(profileName.toLowerCase(), profile);
+                }
+            }
+        }
+
+        // Load distributions
+        distributions.clear();
+        File[] distFiles = configDir.resolve("distributions").toFile().listFiles((dir, name) -> name.endsWith(".yml"));
+        if (distFiles != null) {
+            for (File f : distFiles) {
+                String distName = f.getName().substring(0, f.getName().length() - 4);
+                DistributionConfig dist = new ConfigLoader()
+                    .withLogger(logger)
+                    .withPath(f.toPath())
+                    .build(DistributionConfig.class);
+                if (dist != null) {
+                    distributions.put(distName.toLowerCase(), dist);
+                }
+            }
+        }
     }
 
     /**
@@ -74,5 +143,23 @@ public class ConfigHandler implements Reloadable {
      */
     public DatabaseConfig getDatabaseConfig() {
         return databaseCfg;
+    }
+
+    /**
+     * Gets all loaded profiles.
+     *
+     * @return map of profiles
+     */
+    public Map<String, RtpProfile> getProfiles() {
+        return profiles;
+    }
+
+    /**
+     * Gets all loaded distributions.
+     *
+     * @return map of distributions
+     */
+    public Map<String, DistributionConfig> getDistributions() {
+        return distributions;
     }
 }

@@ -1,0 +1,42 @@
+enabled: true
+command-enabled: true
+require-explicit-permission: false
+priority: 1
+landing-world: 'world'
+call-from-worlds:
+  - 'world.*'
+distribution: 'default-symmetric'
+location-checking-profile: a
+cooldown: 30
+warmup:
+  time: 5
+  cancel-on-move: true
+  count-down: true
+  title-countdown: '&a&lʀᴀɴᴅᴏᴍ ᴛᴘ'
+  subtitle-countdown: '&fᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &a%time%&f...'
+  sound-countdown: 'BLOCK_NOTE_BLOCK_PLING'
+  sound-countdown-pitch-increase: true
+  title-success: '&a&lᴀʀʀɪᴠᴇᴅ!'
+  subtitle-success: '&fʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴀɴᴅᴏᴍʟʏ ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!'
+  sounds-success:
+    - 'ENTITY_ENDERMAN_TELEPORT:1.0:1.0'
+    - 'ENTITY_WITHER_SPAWN:0.4:1.5'
+  title-cancel: '&c&lᴄᴀɴᴄᴇʟʟᴇᴅ'
+  subtitle-cancel: '&fᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ʜᴀѕ ʙᴇᴇɴ ɪɴᴛᴇʀʀᴜᴘᴛᴇᴅ!'
+  sounds-cancel:
+    - 'BLOCK_FIRE_EXTINGUISH:1.0:1.0'
+then-execute:
+  - 'tellraw %PLAYER% {"text":"You have been teleported to %LOCATION% in %WORLD%!"}'
+cost: 0.0
+bounds:
+  low: 32
+  high: 255
+check-radius:
+  x-z: 2
+  vert: 2
+max-attempts:
+  value: 10
+preparations:
+  cache-locations: 10
+prefer-sync-tp:
+  command: false
