@@ -72,10 +72,21 @@ public class AsyncSafeLocationService implements SafeLocationService {
                     if (!claimService.isInsideClaim(potentialLoc)
                         && center.getWorld().getWorldBorder().isInside(potentialLoc)) {
 
-                        Location target = potentialLoc.clone().add(0.5, 1.0, 0.5);
-                        target.setYaw(java.util.concurrent.ThreadLocalRandom.current().nextFloat() * 360.0f);
-                        future.complete(target);
-                        return;
+                        String biomeName = potentialLoc.getWorld().getBiome(potentialLoc).name().toLowerCase();
+                        boolean isExcluded = false;
+                        for (String excluded : profile.excludedBiomes) {
+                            if (biomeName.contains(excluded.toLowerCase())) {
+                                isExcluded = true;
+                                break;
+                            }
+                        }
+
+                        if (!isExcluded) {
+                            Location target = potentialLoc.clone().add(0.5, 1.0, 0.5);
+                            target.setYaw(java.util.concurrent.ThreadLocalRandom.current().nextFloat() * 360.0f);
+                            future.complete(target);
+                            return;
+                        }
                     }
                 }
             }

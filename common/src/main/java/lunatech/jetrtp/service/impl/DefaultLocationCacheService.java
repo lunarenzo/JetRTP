@@ -90,6 +90,16 @@ public class DefaultLocationCacheService implements LocationCacheService {
 
     @Override
     public void startRefillTask() {
+        // Load cached locations from database
+        List<lunatech.jetrtp.model.CachedLocation> loaded = lunatech.jetrtp.database.Queries.LocationCache.load();
+        for (var loc : loaded) {
+            World world = plugin.getServer().getWorld(loc.worldName());
+            if (world != null) {
+                Location location = new Location(world, loc.x(), loc.y(), loc.z(), loc.yaw(), loc.pitch());
+                cacheMap.computeIfAbsent(loc.profileName().toLowerCase(), k -> new ConcurrentLinkedQueue<>()).add(location);
+            }
+        }
+
         // Trigger initial fill for all enabled profiles
         for (RtpProfile profile : plugin.getConfigHandler().getProfiles().values()) {
             refillCacheAsync(profile);
@@ -98,6 +108,22 @@ public class DefaultLocationCacheService implements LocationCacheService {
 
     @Override
     public void shutdown() {
+        List<lunatech.jetrtp.model.CachedLocation> toSave = new java.util.ArrayList<>();
+        for (var entry : cacheMap.entrySet()) {
+            String profileName = entry.getKey();
+            for (Location loc : entry.getValue()) {
+                toSave.add(new lunatech.jetrtp.model.CachedLocation(
+                    profileName,
+                    loc.getWorld().getName(),
+                    loc.getX(),
+                    loc.getY(),
+                    loc.getZ(),
+                    loc.getYaw(),
+                    loc.getPitch()
+                ));
+            }
+        }
+        lunatech.jetrtp.database.Queries.LocationCache.save(toSave);
         cacheMap.clear();
         refillingMap.clear();
     }
