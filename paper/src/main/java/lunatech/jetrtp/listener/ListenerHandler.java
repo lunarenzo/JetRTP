@@ -29,6 +29,7 @@ public class ListenerHandler implements Reloadable {
         listeners.clear();
         listeners.add(new lunatech.jetrtp.listener.PlayerWarmupListener(plugin.getRtpService()));
         listeners.add(new lunatech.jetrtp.listener.PlayerRtpEventListener(plugin));
+        listeners.add(new lunatech.jetrtp.gui.MenuListener());
 
         for (Listener listener : listeners) {
             plugin.getServer().getPluginManager().registerEvents(listener, plugin);
