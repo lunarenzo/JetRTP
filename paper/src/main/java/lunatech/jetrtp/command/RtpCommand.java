@@ -2,6 +2,7 @@ package lunatech.jetrtp.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import io.github.milkdrinkers.colorparser.paper.ColorParser;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import lunatech.jetrtp.AbstractJetRTP;
@@ -31,7 +32,7 @@ public final class RtpCommand {
                     });
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 } else {
-                    ctx.getSource().getSender().sendMessage("§cOnly players can run this command.");
+                    ctx.getSource().getSender().sendMessage(ColorParser.of("<red>Only players can run this command.").build());
                     return 0;
                 }
             })
@@ -51,29 +52,29 @@ public final class RtpCommand {
                 })
                 .executes(ctx -> {
                     if (!(ctx.getSource().getExecutor() instanceof Player player)) {
-                        ctx.getSource().getSender().sendMessage("§cOnly players can run this command.");
+                        ctx.getSource().getSender().sendMessage(ColorParser.of("<red>Only players can run this command.").build());
                         return 0;
                     }
                     String profileName = StringArgumentType.getString(ctx, "profile");
                     RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
                     if (profile == null) {
-                        player.sendMessage("§cUnknown RTP profile: " + profileName);
+                        player.sendMessage(ColorParser.of("<red>Unknown RTP profile: <yellow>" + profileName).build());
                         return 0;
                     }
                     if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profileName.toLowerCase())) {
-                        player.sendMessage("§cYou do not have permission to use the profile: " + profileName);
+                        player.sendMessage(ColorParser.of("<red>You do not have permission to use the profile: <yellow>" + profileName).build());
                         return 0;
                     }
 
                     if (rtpService.isOnCooldown(player, profile)) {
                         long remaining = rtpService.getRemainingCooldown(player, profile) / 1000L;
-                        player.sendMessage("§cYou must wait " + remaining + " seconds before using RTP again.");
+                        player.sendMessage(ColorParser.of("<red>You must wait <yellow>" + remaining + "</yellow> seconds before using RTP again.").build());
                         return 0;
                     }
 
                     rtpService.executeRtp(player, profile).thenAccept(success -> {
                         if (!success) {
-                            player.sendMessage("§cTeleportation could not be completed at this time.");
+                            player.sendMessage(ColorParser.of("<red>Teleportation could not be completed at this time.").build());
                         }
                     });
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
@@ -85,7 +86,7 @@ public final class RtpCommand {
                     if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
                         jetRtp.onReload();
                     }
-                    ctx.getSource().getSender().sendMessage("§aJetRTP profiles and configuration reloaded.");
+                    ctx.getSource().getSender().sendMessage(ColorParser.of("<green>JetRTP profiles and configuration reloaded.").build());
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 })
             )
@@ -105,22 +106,22 @@ public final class RtpCommand {
                                 var targetResolver = ctx.getArgument("target", io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver.class);
                                 var targets = targetResolver.resolve(ctx.getSource());
                                 if (targets.isEmpty()) {
-                                    sender.sendMessage("§cTarget player not found.");
+                                    sender.sendMessage(ColorParser.of("<red>Target player not found.").build());
                                     return 0;
                                 }
                                 Player target = targets.getFirst();
                                 String profileName = StringArgumentType.getString(ctx, "profile");
                                 RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
                                 if (profile == null) {
-                                    sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                                    sender.sendMessage(ColorParser.of("<red>Unknown RTP profile: <yellow>" + profileName).build());
                                     return 0;
                                 }
-                                sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " using profile " + profile.name);
+                                sender.sendMessage(ColorParser.of("<green>Forcefully executing random teleport for <white>" + target.getName() + "</white> using profile <white>" + profile.name).build());
                                 rtpService.executeRtp(target, profile).thenAccept(success -> {
                                     if (success) {
-                                        sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
+                                        sender.sendMessage(ColorParser.of("<green>Randomly teleported <white>" + target.getName() + "</white> successfully.").build());
                                     } else {
-                                        sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                                        sender.sendMessage(ColorParser.of("<red>Failed to randomly teleport <white>" + target.getName()).build());
                                     }
                                 });
                                 return com.mojang.brigadier.Command.SINGLE_SUCCESS;
@@ -143,7 +144,7 @@ public final class RtpCommand {
                                 var targetResolver = ctx.getArgument("target", io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSelectorArgumentResolver.class);
                                 var targets = targetResolver.resolve(ctx.getSource());
                                 if (targets.isEmpty()) {
-                                    sender.sendMessage("§cTarget player not found.");
+                                    sender.sendMessage(ColorParser.of("<red>Target player not found.").build());
                                     return 0;
                                 }
                                 Player target = targets.getFirst();
@@ -177,17 +178,17 @@ public final class RtpCommand {
                                 }
 
                                 if (profile == null) {
-                                    sender.sendMessage("§cNo RTP profile could be resolved.");
+                                    sender.sendMessage(ColorParser.of("<red>No RTP profile could be resolved.").build());
                                     return 0;
                                 }
 
                                 RtpProfile finalProfile = profile;
-                                sender.sendMessage("§aForcefully executing random teleport for " + target.getName() + " landing in world " + worldName);
+                                sender.sendMessage(ColorParser.of("<green>Forcefully executing random teleport for <white>" + target.getName() + "</white> landing in world <white>" + worldName).build());
                                 rtpService.executeRtp(target, finalProfile).thenAccept(success -> {
                                     if (success) {
-                                        sender.sendMessage("§aRandomly teleported " + target.getName() + " successfully.");
+                                        sender.sendMessage(ColorParser.of("<green>Randomly teleported <white>" + target.getName() + "</white> successfully.").build());
                                     } else {
-                                        sender.sendMessage("§cFailed to randomly teleport " + target.getName());
+                                        sender.sendMessage(ColorParser.of("<red>Failed to randomly teleport <white>" + target.getName()).build());
                                     }
                                 });
                                 return com.mojang.brigadier.Command.SINGLE_SUCCESS;
@@ -200,12 +201,12 @@ public final class RtpCommand {
                 .requires(source -> source.getSender().hasPermission("jakesrtp.admin.info"))
                 .executes(ctx -> {
                     CommandSender sender = ctx.getSource().getSender();
-                    sender.sendMessage("§8=== §aJetRTP General Info §8===");
-                    sender.sendMessage("§7Loaded Profiles: §f" + plugin.getConfigHandler().getProfiles().size());
-                    sender.sendMessage("§7Database Active: §f" + lunatech.jetrtp.utility.DB.isStarted());
+                    sender.sendMessage(ColorParser.of("<dark_gray>=== <green>JetRTP General Info <dark_gray>===").build());
+                    sender.sendMessage(ColorParser.of("<gray>Loaded Profiles: <white>" + plugin.getConfigHandler().getProfiles().size()).build());
+                    sender.sendMessage(ColorParser.of("<gray>Database Active: <white>" + lunatech.jetrtp.utility.DB.isStarted()).build());
                     for (RtpProfile profile : plugin.getConfigHandler().getProfiles().values()) {
                         int size = plugin.getCacheService().getCacheSize(profile);
-                        sender.sendMessage("§8- §a" + profile.name + "§7: Cache = §f" + size + "/" + profile.preparations.cacheLocations);
+                        sender.sendMessage(ColorParser.of("<dark_gray>- <green>" + profile.name + "<gray>: Cache = <white>" + size + "/" + profile.preparations.cacheLocations).build());
                     }
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 })
@@ -221,17 +222,17 @@ public final class RtpCommand {
                         String profileName = StringArgumentType.getString(ctx, "profile");
                         RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
                         if (profile == null) {
-                            sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                            sender.sendMessage(ColorParser.of("<red>Unknown RTP profile: <yellow>" + profileName).build());
                             return 0;
                         }
-                        sender.sendMessage("§8=== §aJetRTP Profile Info: " + profile.name + " §8===");
-                        sender.sendMessage("§7Enabled: §f" + profile.enabled);
-                        sender.sendMessage("§7Landing World: §f" + profile.landingWorld);
-                        sender.sendMessage("§7Cache Size: §f" + plugin.getCacheService().getCacheSize(profile) + " / " + profile.preparations.cacheLocations);
-                        sender.sendMessage("§7Cooldown Time: §f" + profile.cooldown + "s");
-                        sender.sendMessage("§7Cost: §f$" + profile.cost);
-                        sender.sendMessage("§7Bounds: §fY " + profile.bounds.low + " to " + profile.bounds.high);
-                        sender.sendMessage("§7Excluded Biomes: §f" + String.join(", ", profile.excludedBiomes));
+                        sender.sendMessage(ColorParser.of("<dark_gray>=== <green>JetRTP Profile Info: <white>" + profile.name + " <dark_gray>===").build());
+                        sender.sendMessage(ColorParser.of("<gray>Enabled: <white>" + profile.enabled).build());
+                        sender.sendMessage(ColorParser.of("<gray>Landing World: <white>" + profile.landingWorld).build());
+                        sender.sendMessage(ColorParser.of("<gray>Cache Size: <white>" + plugin.getCacheService().getCacheSize(profile) + " / " + profile.preparations.cacheLocations).build());
+                        sender.sendMessage(ColorParser.of("<gray>Cooldown Time: <white>" + profile.cooldown + "s").build());
+                        sender.sendMessage(ColorParser.of("<gray>Cost: <white>$" + profile.cost).build());
+                        sender.sendMessage(ColorParser.of("<gray>Bounds: <white>Y " + profile.bounds.low + " to " + profile.bounds.high).build());
+                        sender.sendMessage(ColorParser.of("<gray>Excluded Biomes: <white>" + String.join(", ", profile.excludedBiomes)).build());
                         return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                     })
                 )
@@ -261,7 +262,7 @@ public final class RtpCommand {
 
                                 RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
                                 if (profile == null) {
-                                    sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                                    sender.sendMessage(ColorParser.of("<red>Unknown RTP profile: <yellow>" + profileName).build());
                                     return 0;
                                 }
 
@@ -286,16 +287,16 @@ public final class RtpCommand {
                                             profile.bounds.high = Integer.parseInt(value);
                                             break;
                                         default:
-                                            sender.sendMessage("§cUnknown settings key: " + key);
+                                            sender.sendMessage(ColorParser.of("<red>Unknown settings key: <yellow>" + key).build());
                                             return 0;
                                     }
                                 } catch (NumberFormatException e) {
-                                    sender.sendMessage("§cInvalid value for setting: " + value);
+                                    sender.sendMessage(ColorParser.of("<red>Invalid value for setting: <yellow>" + value).build());
                                     return 0;
                                 }
 
                                 plugin.getConfigHandler().saveProfile(profile);
-                                sender.sendMessage("§aSuccessfully updated setting " + key + " to " + value + " in profile " + profile.name);
+                                sender.sendMessage(ColorParser.of("<green>Successfully updated setting <white>" + key + "</white> to <white>" + value + "</white> in profile <white>" + profile.name).build());
                                 return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                             })
                         )
