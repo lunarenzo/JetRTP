@@ -76,7 +76,6 @@ tasks {
 
         reloc("io.github.milkdrinkers.javasemver", "javasemver")
         reloc("io.github.milkdrinkers.versionwatch", "versionwatch")
-        reloc("io.github.milkdrinkers.wordweaver", "wordweaver")
         reloc("io.github.milkdrinkers.crate", "crate")
         reloc("io.github.milkdrinkers.colorparser", "colorparser")
         reloc("io.github.milkdrinkers.threadutil", "threadutil")

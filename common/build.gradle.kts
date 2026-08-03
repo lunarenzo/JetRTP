@@ -12,7 +12,6 @@ dependencies {
     // API
     api(libs.javasemver) // Required by VersionWatch
     api(libs.versionwatch)
-    api(libs.wordweaver)
     api(libs.bundles.configurate.core) {
         isTransitive = false
     }
