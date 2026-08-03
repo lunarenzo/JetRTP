@@ -1,35 +1,51 @@
 package lunatech.jetrtp.gui;
 
-import dev.triumphteam.gui.builder.item.ItemBuilder;
-import dev.triumphteam.gui.guis.Gui;
-import dev.triumphteam.gui.guis.GuiItem;
 import lunatech.jetrtp.AbstractJetRTP;
 import lunatech.jetrtp.config.RtpProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class ProfileMenu {
+public class ProfileMenu implements InventoryHolder {
 
-    public static void open(Player player, AbstractJetRTP plugin) {
-        Gui gui = Gui.gui()
-            .title(Component.text("Random Teleport Destinations", NamedTextColor.DARK_GRAY))
-            .rows(3)
-            .create();
+    private final Inventory inventory;
+    private final AbstractJetRTP plugin;
+    private final Map<Integer, RtpProfile> slotProfiles = new HashMap<>();
 
-        GuiItem filler = ItemBuilder.from(Material.GRAY_STAINED_GLASS_PANE)
-            .name(Component.empty())
-            .asGuiItem();
-        gui.getFiller().fill(filler);
+    public ProfileMenu(Player player, AbstractJetRTP plugin) {
+        this.plugin = plugin;
+        this.inventory = Bukkit.createInventory(this, 27, Component.text("Random Teleport Destinations", NamedTextColor.DARK_GRAY));
+
+        // Fill background
+        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        if (fillerMeta != null) {
+            fillerMeta.displayName(Component.empty());
+            filler.setItemMeta(fillerMeta);
+        }
+        for (int i = 0; i < 27; i++) {
+            inventory.setItem(i, filler);
+        }
 
         Collection<RtpProfile> profiles = plugin.getConfigHandler().getProfiles().values();
         int slot = 10;
 
         for (RtpProfile profile : profiles) {
             if (!profile.enabled || !profile.commandEnabled) continue;
-            
+
             if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profile.name.toLowerCase())) {
                 continue;
             }
@@ -41,33 +57,55 @@ public class ProfileMenu {
                 iconMat = Material.ENDER_PEARL;
             }
 
-            GuiItem item = ItemBuilder.from(iconMat)
-                .name(Component.text(profile.name.substring(0, 1).toUpperCase() + profile.name.substring(1), NamedTextColor.GREEN))
-                .lore(
-                    Component.text("Click to random teleport to this destination!", NamedTextColor.GRAY),
-                    Component.empty(),
-                    Component.text("Cooldown: ", NamedTextColor.GRAY).append(Component.text(profile.cooldown + "s", NamedTextColor.YELLOW)),
-                    Component.text("Cost: ", NamedTextColor.GRAY).append(Component.text("$" + profile.cost, NamedTextColor.YELLOW))
-                )
-                .asGuiItem(event -> {
-                    gui.close(player);
-                    if (plugin.getRtpService().isOnCooldown(player, profile)) {
-                        long remaining = plugin.getRtpService().getRemainingCooldown(player, profile) / 1000L;
-                        player.sendMessage("§cYou must wait " + remaining + " seconds before using RTP again.");
-                        return;
-                    }
-                    plugin.getRtpService().executeRtp(player, profile).thenAccept(success -> {
-                        if (!success) {
-                            player.sendMessage("§cTeleportation could not be completed at this time.");
-                        }
-                    });
-                });
+            ItemStack item = new ItemStack(iconMat);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                String formattedName = profile.name.substring(0, 1).toUpperCase() + profile.name.substring(1);
+                meta.displayName(Component.text(formattedName, NamedTextColor.GREEN));
+                
+                List<Component> lore = new ArrayList<>();
+                lore.add(Component.text("Click to random teleport to this destination!", NamedTextColor.GRAY));
+                lore.add(Component.empty());
+                lore.add(Component.text("Cooldown: ", NamedTextColor.GRAY).append(Component.text(profile.cooldown + "s", NamedTextColor.YELLOW)));
+                lore.add(Component.text("Cost: ", NamedTextColor.GRAY).append(Component.text("$" + profile.cost, NamedTextColor.YELLOW)));
+                meta.lore(lore);
+                item.setItemMeta(meta);
+            }
 
-            gui.setItem(slot, item);
+            inventory.setItem(slot, item);
+            slotProfiles.put(slot, profile);
+            
             slot += 2;
             if (slot > 16) break;
         }
+    }
 
-        gui.open(player);
+    @Override
+    public @NotNull Inventory getInventory() {
+        return this.inventory;
+    }
+
+    public void handleClick(Player player, int slot) {
+        RtpProfile profile = slotProfiles.get(slot);
+        if (profile == null) return;
+
+        player.closeInventory();
+        
+        if (plugin.getRtpService().isOnCooldown(player, profile)) {
+            long remaining = plugin.getRtpService().getRemainingCooldown(player, profile) / 1000L;
+            player.sendMessage("§cYou must wait " + remaining + " seconds before using RTP again.");
+            return;
+        }
+        
+        plugin.getRtpService().executeRtp(player, profile).thenAccept(success -> {
+            if (!success) {
+                player.sendMessage("§cTeleportation could not be completed at this time.");
+            }
+        });
+    }
+
+    public static void open(Player player, AbstractJetRTP plugin) {
+        ProfileMenu menu = new ProfileMenu(player, plugin);
+        player.openInventory(menu.getInventory());
     }
 }
