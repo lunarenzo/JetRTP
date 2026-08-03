@@ -22,5 +22,38 @@
       "failure": "<red>Failed to upload dump: <error>",
       "dumping": "<green>Gathering dump information and uploading to mclo.gs..."
     }
+  },
+  "rtp": {
+    "only-players": "<red>Only players can run this command.",
+    "unknown-profile": "<red>Unknown RTP profile: <yellow><profile>",
+    "no-permission": "<red>You do not have permission to use the profile: <yellow><profile>",
+    "cooldown": "<red>You must wait <yellow><remaining></yellow> seconds before using RTP again.",
+    "teleport-failed": "<red>Teleportation could not be completed at this time.",
+    "reloaded": "<green>JetRTP profiles and configuration reloaded.",
+    "target-not-found": "<red>Target player not found.",
+    "force-config": "<green>Forcefully executing random teleport for <white><target></white> using profile <white><profile>",
+    "force-world": "<green>Forcefully executing random teleport for <white><target></white> landing in world <white><world>",
+    "force-success": "<green>Randomly teleported <white><target></white> successfully.",
+    "force-failed": "<red>Failed to randomly teleport <white><target></white>",
+    "no-profile-resolved": "<red>No RTP profile could be resolved."
+  },
+  "info": {
+    "general-header": "<dark_gray>=== <green>JetRTP General Info <dark_gray>===",
+    "loaded-profiles": "<gray>Loaded Profiles: <white><count>",
+    "database-active": "<gray>Database Active: <white><status>",
+    "profile-entry": "<dark_gray>- <green><profile><gray>: Cache = <white><cache>/<max>",
+    "profile-header": "<dark_gray>=== <green>JetRTP Profile Info: <white><profile> <dark_gray>===",
+    "profile-enabled": "<gray>Enabled: <white><status>",
+    "profile-world": "<gray>Landing World: <white><world>",
+    "profile-cache": "<gray>Cache Size: <white><cache> / <max>",
+    "profile-cooldown": "<gray>Cooldown Time: <white><cooldown>s",
+    "profile-cost": "<gray>Cost: <white>$<cost>",
+    "profile-bounds": "<gray>Bounds: <white>Y <low> to <high>",
+    "profile-biomes": "<gray>Excluded Biomes: <white><biomes>"
+  },
+  "settings": {
+    "unknown-key": "<red>Unknown settings key: <yellow><key>",
+    "invalid-value": "<red>Invalid value for setting: <yellow><value>",
+    "success": "<green>Successfully updated setting <white><key></white> to <white><value></white> in profile <white><profile>"
   }
 }
