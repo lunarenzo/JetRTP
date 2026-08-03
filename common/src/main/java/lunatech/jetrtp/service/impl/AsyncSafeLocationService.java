@@ -96,10 +96,23 @@ public class AsyncSafeLocationService implements SafeLocationService {
         }
 
         double[] coords;
-        if (dist.shape.equalsIgnoreCase("circle")) {
+        double maxRadius = dist.radius.max;
+        double minRadius = dist.radius.min;
+        double centerX = 0;
+        double centerZ = 0;
+        boolean isWorldBorder = distName.equalsIgnoreCase("world-border") || dist.shape.equalsIgnoreCase("world-border");
+
+        if (isWorldBorder) {
+            org.bukkit.WorldBorder wb = center.getWorld().getWorldBorder();
+            maxRadius = Math.max(0, (wb.getSize() / 2.0) - 10.0);
+            centerX = wb.getCenter().getX();
+            centerZ = wb.getCenter().getZ();
+        }
+
+        if (isWorldBorder || dist.shape.equalsIgnoreCase("circle")) {
             coords = RandomCords.getRandXyCircle(
-                dist.radius.max,
-                dist.radius.min,
+                (int) maxRadius,
+                (int) minRadius,
                 dist.gaussianDistribution.enabled ? dist.gaussianDistribution.shrink : 0,
                 dist.gaussianDistribution.center
             );
@@ -119,28 +132,28 @@ public class AsyncSafeLocationService implements SafeLocationService {
         } else { // square
             if (dist.gaussianDistribution.enabled) {
                 coords = RandomCords.getRandXySquare(
-                    dist.radius.max,
-                    dist.radius.min,
+                    (int) maxRadius,
+                    (int) minRadius,
                     dist.gaussianDistribution.shrink,
                     dist.gaussianDistribution.center
                 );
             } else {
-                coords = RandomCords.getRandXySquare(dist.radius.max, dist.radius.min);
+                coords = RandomCords.getRandXySquare((int) maxRadius, (int) minRadius);
             }
         }
 
-        double centerX = 0;
-        double centerZ = 0;
-        if (dist.center.option.equalsIgnoreCase("a")) { // world spawn
-            Location spawn = center.getWorld().getSpawnLocation();
-            centerX = spawn.getX();
-            centerZ = spawn.getZ();
-        } else if (dist.center.option.equalsIgnoreCase("b")) { // player location
-            centerX = center.getX();
-            centerZ = center.getZ();
-        } else { // custom
-            centerX = dist.center.cCustom.x;
-            centerZ = dist.center.cCustom.z;
+        if (!isWorldBorder) {
+            if (dist.center.option.equalsIgnoreCase("a")) { // world spawn
+                Location spawn = center.getWorld().getSpawnLocation();
+                centerX = spawn.getX();
+                centerZ = spawn.getZ();
+            } else if (dist.center.option.equalsIgnoreCase("b")) { // player location
+                centerX = center.getX();
+                centerZ = center.getZ();
+            } else { // custom
+                centerX = dist.center.cCustom.x;
+                centerZ = dist.center.cCustom.z;
+            }
         }
 
         return new Location(center.getWorld(), coords[0] + centerX, 255, coords[1] + centerZ);

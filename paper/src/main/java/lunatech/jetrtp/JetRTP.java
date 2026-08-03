@@ -52,6 +52,9 @@ public class JetRTP extends AbstractJetRTP {
     public void onLoad() {
         instance = this;
 
+        // Register custom WorldGuard landing flag
+        lunatech.jetrtp.hook.claims.WorldGuardHook.registerFlag();
+
         configHandler = new ConfigHandler(this);
         translationHandler = new TranslationHandler(configHandler);
         databaseHandler = DatabaseHandler.builder()
@@ -94,7 +97,7 @@ public class JetRTP extends AbstractJetRTP {
     @Override
     public void onEnable() {
         // Initialize services
-        lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.service.impl.DefaultClaimService();
+        lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.hook.claims.PaperClaimService(this);
         safeLocationService = new lunatech.jetrtp.service.impl.AsyncSafeLocationService(this, claimService);
         cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService);
         lunatech.jetrtp.hook.EconomyProvider economyProvider = new lunatech.jetrtp.hook.vault.VaultEconomyProvider();
