@@ -1,5 +1,5 @@
 <div align="center" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
-  <img align="center" style="text-align:center;" src="assets/example_banner.webp" alt="project banner">
+  <img align="center" style="text-align:center;" src="assets/jetrtp_banner.webp" alt="project banner">
 
   <h1>Project Name</h1>
 
@@ -78,11 +78,11 @@ Making your issue easy to read and follow will usually result in it being handle
 <a href="">
     <img alt="Documentation" src="https://img.shields.io/badge/DOCUMENTATION-900C3F?style=for-the-badge&labelColor=141417">
 </a>
-<a href="https://javadoc.io/doc/io.github.exampleuser/example-api">
+<a href="https://javadoc.io/doc/lunatech.jetrtp-api">
     <img alt="Javadoc" src="https://img.shields.io/badge/JAVADOC-8A2BE2?style=for-the-badge&labelColor=141417">
 </a>
 
-We provide API for developers accessible through [Maven Central](https://central.sonatype.com/artifact/io.github.exampleuser/example-api).
+We provide API for developers accessible through [Maven Central](https://central.sonatype.com/artifact/lunatech.jetrtp-api).
 
 <details>
 <summary>Gradle Kotlin DSL</summary>
@@ -93,7 +93,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.github.exampleuser:example-api:VERSION")
+    compileOnly("lunatech.jetrtp-api:VERSION")
 }
 ```
 
@@ -106,8 +106,8 @@ dependencies {
 <project>
     <dependencies>
         <dependency>
-            <groupId>io.github.exampleuser</groupId>
-            <artifactId>example-api</artifactId>
+            <groupId>lunatech</groupId>
+            <artifactId>jetrtp-api</artifactId>
             <version>VERSION</version>
             <scope>provided</scope>
         </dependency>

@@ -13,7 +13,7 @@
 ## Description
 
 This is a configured and ready to go template for making Minecraft plugins. It includes a plethora of useful
-boilerplate, libraries and examples to quickly get you going when creating a new plugin.
+boilerplate, libraries and jetrtps to quickly get you going when creating a new plugin.
 
 All of the included libraries and tooling has been hand-picked for its stability and extendability. Its purpose is to
 minimize duplicated code, while providing powerful and ergonomic ways of working with the Bukkit API, databases,
@@ -57,9 +57,9 @@ configuration and repository maintenance.
 
 **Versioning Strategy**:
 
-- Stable releases as: `ExamplePlugin-1.0.0.jar`
-- Testing releases as: `ExamplePlugin-1.0.0-RC-X.jar`
-- Development releases as: `ExamplePlugin-1.0.0-SNAPSHOT-X.jar`
+- Stable releases as: `JetRTPPlugin-1.0.0.jar`
+- Testing releases as: `JetRTPPlugin-1.0.0-RC-X.jar`
+- Development releases as: `JetRTPPlugin-1.0.0-SNAPSHOT-X.jar`
 
 | GitHub Event               | Version Format        | CI Action             | GitHub Release Draft? |
 |----------------------------|-----------------------|-----------------------|-----------------------|
@@ -135,15 +135,15 @@ configuration and repository maintenance.
    If you choose to adopt the Code of Conduct in this template, please replace `GITHUB_CONTACT_EMAIL` at line 63 with
    your preferred method of contact. Otherwise replace or remove it.
 4. #### Change [Project Name](./settings.gradle.kts)
-   Replace all occurances of `ExamplePlugin` with your new plugin name. Don't forget to rename the main
-   class [ExamplePlugin.java](./src/main/java/com/github/ExampleUser/ExamplePlugin/ExamplePlugin.java) to the same
+   Replace all occurances of `JetRTPPlugin` with your new plugin name. Don't forget to rename the main
+   class [JetRTPPlugin.java](./src/main/java/com/github/JetRTPUser/JetRTPPlugin/JetRTPPlugin.java) to the same
    value.
    ```kotlin
    rootProject.name = "MyNamePlugin"
    ```
 5. #### Change [build.gradle.kts](./build.gradle.kts)
     1. ##### Change Plugin Info
-       > The final package path for your plugin will end up being something like `io.github.darksaid98.exampleplugin`. It's made up of these components `io.github.<USERNAME>.<PLUGINNAME>` where `<USERNAME>` is your github name in lowercase, and `<PLUGINNAME>` is added by `rootProject.name` lowercased.
+       > The final package path for your plugin will end up being something like `io.github.darksaid98.jetrtpplugin`. It's made up of these components `io.github.<USERNAME>.<PLUGINNAME>` where `<USERNAME>` is your github name in lowercase, and `<PLUGINNAME>` is added by `rootProject.name` lowercased.
        
        Don't forget to change package locations in `src/main/java/` when changing the group.
        ```kotlin
