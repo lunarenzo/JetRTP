@@ -14,7 +14,12 @@ dependencies {
     // API
     implementation(libs.commandapi.shade.paper)
     implementation(libs.triumph.gui) {
-        exclude("net.kyori")
+        exclude("net.kyori", "adventure-api")
+        exclude("net.kyori", "adventure-key")
+        exclude("net.kyori", "adventure-text-serializer-gson")
+        exclude("net.kyori", "adventure-text-serializer-json")
+        exclude("net.kyori", "adventure-text-serializer-legacy")
+        exclude("net.kyori", "adventure-text-serializer-plain")
     }
     api(libs.colorparser.paper) {
         exclude("net.kyori")
@@ -85,6 +90,7 @@ tasks {
         reloc("org.json", "json")
         reloc("dev.jorel.commandapi", "commandapi")
         reloc("dev.triumphteam.gui", "triumphgui")
+        reloc("net.kyori.adventure.platform", "adventure.platform")
         reloc("com.zaxxer.hikari", "hikaricp")
         reloc("org.bstats", "bstats")
 
