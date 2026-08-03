@@ -203,6 +203,23 @@ public class ConfigLoader {
      * @param <T>         a type implementing {@link VersionedConfig}
      * @return the loaded config instance, or {@code null} if loading failed
      */
+    /**
+     * Saves a config instance back to the file.
+     *
+     * @param config the config instance to save
+     * @param configClass the config class type
+     * @param <T> a type implementing VersionedConfig
+     * @throws ConfigurateException if serialization or saving fails
+     */
+    public <T extends VersionedConfig> void save(@NotNull T config, @NotNull Class<T> configClass) throws ConfigurateException {
+        if (file == null)
+            throw new ConfigurateException("No config file path set, call withPath() or withFile() before save()");
+        final YamlConfigurationLoader loader = createLoader(file);
+        final CommentedConfigurationNode newRoot = CommentedConfigurationNode.root(loader.defaultOptions());
+        newRoot.set(configClass, config);
+        loader.save(newRoot);
+    }
+
     @Nullable
     public <T extends VersionedConfig> T build(@NotNull Class<T> configClass) {
         try {

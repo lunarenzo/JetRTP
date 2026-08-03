@@ -170,6 +170,59 @@ public final class RtpCommand extends Command {
                         }
                     }
                 })
+            )
+            .withSubcommand(new CommandAPICommand("settings")
+                .withPermission("jakesrtp.admin.settings")
+                .withArguments(new StringArgument("profile").replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                    return plugin.getConfigHandler().getProfiles().keySet().toArray(new String[0]);
+                })))
+                .withArguments(new StringArgument("key").replaceSuggestions(ArgumentSuggestions.strings(
+                    "landingworld", "cost", "cooldown", "maxattempts", "bounds-low", "bounds-high"
+                )))
+                .withArguments(new StringArgument("value"))
+                .executes((sender, args) -> {
+                    String profileName = (String) args.get("profile");
+                    String key = (String) args.get("key");
+                    String value = (String) args.get("value");
+
+                    RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
+                    if (profile == null) {
+                        sender.sendMessage("§cUnknown RTP profile: " + profileName);
+                        return;
+                    }
+
+                    try {
+                        switch (key.toLowerCase()) {
+                            case "landingworld":
+                                profile.landingWorld = value;
+                                break;
+                            case "cost":
+                                profile.cost = Double.parseDouble(value);
+                                break;
+                            case "cooldown":
+                                profile.cooldown = Integer.parseInt(value);
+                                break;
+                            case "maxattempts":
+                                profile.maxAttempts.value = Integer.parseInt(value);
+                                break;
+                            case "bounds-low":
+                                profile.bounds.low = Integer.parseInt(value);
+                                break;
+                            case "bounds-high":
+                                profile.bounds.high = Integer.parseInt(value);
+                                break;
+                            default:
+                                sender.sendMessage("§cUnknown settings key: " + key);
+                                return;
+                        }
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage("§cInvalid value for setting: " + value);
+                        return;
+                    }
+
+                    plugin.getConfigHandler().saveProfile(profile);
+                    sender.sendMessage("§aSuccessfully updated setting " + key + " to " + value + " in profile " + profile.name);
+                })
             );
     }
 

@@ -155,6 +155,23 @@ public class ConfigHandler implements Reloadable {
     }
 
     /**
+     * Saves an RTP profile back to its configuration file.
+     *
+     * @param profile the profile to save
+     */
+    public void saveProfile(RtpProfile profile) {
+        try {
+            Path file = configDir.resolve("rtpSettings").resolve(profile.name + ".yml");
+            new ConfigLoader()
+                .withLogger(logger)
+                .withPath(file)
+                .save(profile, RtpProfile.class);
+        } catch (Exception e) {
+            logger.error("Failed to save RTP profile: " + profile.name, e);
+        }
+    }
+
+    /**
      * Gets all loaded distributions.
      *
      * @return map of distributions
