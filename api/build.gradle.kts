@@ -22,7 +22,7 @@ mavenPublishing {
     pom {
         name.set(base.archivesName.get().split("-").map { it.capitalized() }.joinToString("-"))
         description.set(rootProject.description.orEmpty())
-        url.set("https://github.com/jetrtpuser/JetRTP")
+        url.set("https://github.com/lunarenzo/JetRTP")
         inceptionYear.set("2026")
 
         licenses {
@@ -35,17 +35,17 @@ mavenPublishing {
 
         developers {
             developer {
-                id.set("jetrtpuser")
-                name.set("jetrtpuser")
-                url.set("https://github.com/jetrtpuser")
-                organization.set("JetRTPUser")
+                id.set("lunarenzo")
+                name.set("lunarenzo")
+                url.set("https://github.com/lunarenzo")
+                organization.set("lunatech")
             }
         }
 
         scm {
-            url.set("https://github.com/jetrtpuser/JetRTP")
-            connection.set("scm:git:git://github.com/jetrtpuser/JetRTP.git")
-            developerConnection.set("scm:git:ssh://github.com:jetrtpuser/JetRTP.git")
+            url.set("https://github.com/lunarenzo/JetRTP")
+            connection.set("scm:git:git://github.com/lunarenzo/JetRTP.git")
+            developerConnection.set("scm:git:ssh://github.com:lunarenzo/JetRTP.git")
         }
     }
 
