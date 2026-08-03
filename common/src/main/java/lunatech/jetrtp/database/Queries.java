@@ -208,16 +208,15 @@ public final class Queries {
     public static final class LocationCache {
         public static void save(List<lunatech.jetrtp.model.CachedLocation> locations) {
             if (!DB.isStarted()) return;
-            String tablePrefix = DB.getHandler().getDatabaseConfig().getTablePrefix();
             try (Connection con = DB.getConnection()) {
                 DSLContext context = DB.getContext(con);
-                context.execute("DELETE FROM \"" + tablePrefix + "location_cache\"");
+                context.deleteFrom(table(name("location_cache"))).execute();
                 if (locations.isEmpty()) return;
 
                 List<org.jooq.Query> queries = new ArrayList<>();
                 for (var loc : locations) {
                     queries.add(
-                        context.insertInto(table(name(tablePrefix + "location_cache")),
+                        context.insertInto(table(name("location_cache")),
                             field(name("profile_name")),
                             field(name("world_name")),
                             field(name("x")),
@@ -244,7 +243,6 @@ public final class Queries {
 
         public static List<lunatech.jetrtp.model.CachedLocation> load() {
             if (!DB.isStarted()) return Collections.emptyList();
-            String tablePrefix = DB.getHandler().getDatabaseConfig().getTablePrefix();
             List<lunatech.jetrtp.model.CachedLocation> list = new ArrayList<>();
             try (Connection con = DB.getConnection()) {
                 DSLContext context = DB.getContext(con);
@@ -256,7 +254,7 @@ public final class Queries {
                     field(name("z")),
                     field(name("yaw")),
                     field(name("pitch"))
-                ).from(table(name(tablePrefix + "location_cache"))).fetch();
+                ).from(table(name("location_cache"))).fetch();
 
                 for (var r : records) {
                     list.add(new lunatech.jetrtp.model.CachedLocation(

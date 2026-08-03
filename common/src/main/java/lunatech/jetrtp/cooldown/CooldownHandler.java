@@ -38,7 +38,9 @@ public final class CooldownHandler implements Reloadable {
         if (listenerHandler == null)
             return;
 
-        autoSaveTask.cancel();
+        if (autoSaveTask != null) {
+            autoSaveTask.cancel();
+        }
         listenerHandler.onDisable(plugin);
         Cooldowns.reset();
     }
