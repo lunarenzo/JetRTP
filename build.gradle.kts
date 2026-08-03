@@ -44,6 +44,7 @@ subprojects {
         maven("https://repo.codemc.org/repository/maven-public/") {
             content {
                 includeGroup("com.github.retrooper") // PacketEvents
+                includeGroup("org.popcraft")
             }
         }
         maven("https://jitpack.io/")

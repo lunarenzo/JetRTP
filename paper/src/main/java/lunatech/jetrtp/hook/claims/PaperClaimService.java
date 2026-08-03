@@ -30,6 +30,14 @@ public class PaperClaimService implements LandClaimService {
                     plugin.getComponentLogger().warn("Failed to load WorldGuard integration", t);
                 }
             }
+            if (pm.isPluginEnabled("ChunkyBorder")) {
+                try {
+                    hooks.add(new ChunkyBorderHook());
+                    plugin.getComponentLogger().info("Loaded ChunkyBorder boundary integration.");
+                } catch (Throwable t) {
+                    plugin.getComponentLogger().warn("Failed to load ChunkyBorder integration", t);
+                }
+            }
         }
     }
 
