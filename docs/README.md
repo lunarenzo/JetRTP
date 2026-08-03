@@ -136,7 +136,7 @@ configuration and repository maintenance.
    your preferred method of contact. Otherwise replace or remove it.
 4. #### Change [Project Name](./settings.gradle.kts)
    Replace all occurances of `JetRTPPlugin` with your new plugin name. Don't forget to rename the main
-   class [JetRTPPlugin.java](./src/main/java/com/github/JetRTPUser/JetRTPPlugin/JetRTPPlugin.java) to the same
+    class [JetRTPPlugin.java](./src/main/java/com/github/lunarenzo/JetRTPPlugin/JetRTPPlugin.java) to the same
    value.
    ```kotlin
    rootProject.name = "MyNamePlugin"
