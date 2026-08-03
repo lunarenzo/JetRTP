@@ -2,6 +2,8 @@ package lunatech.jetrtp.service.impl;
 
 import lunatech.jetrtp.AbstractJetRTP;
 import lunatech.jetrtp.config.RtpProfile;
+import lunatech.jetrtp.cooldown.CooldownType;
+import lunatech.jetrtp.cooldown.Cooldowns;
 import lunatech.jetrtp.hook.EconomyProvider;
 import lunatech.jetrtp.service.LocationCacheService;
 import lunatech.jetrtp.service.RtpService;
@@ -20,7 +22,6 @@ public class DefaultRtpService implements RtpService {
     private final LocationCacheService cacheService;
     private final EconomyProvider economyProvider;
 
-    private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
     private final Map<UUID, Integer> warmupTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Location> warmupStartLocations = new ConcurrentHashMap<>();
 
@@ -157,7 +158,7 @@ public class DefaultRtpService implements RtpService {
     }
 
     private void completeTeleportation(Player player, RtpProfile profile, Location loc, CompletableFuture<Boolean> future) {
-        cooldowns.put(player.getName().toLowerCase() + ":" + profile.name.toLowerCase(), System.currentTimeMillis());
+        Cooldowns.set(player.getUniqueId(), CooldownType.RTP_COOLDOWN, java.time.Duration.ofSeconds(profile.cooldown));
 
         if (profile.cost > 0 && economyProvider.hasEconomy()) {
             economyProvider.withdraw(player, profile.cost);
@@ -205,21 +206,12 @@ public class DefaultRtpService implements RtpService {
         if (player.hasPermission("jakesrtp.nocooldown") || player.hasPermission("jakesrtp.nocooldown." + profile.name.toLowerCase())) {
             return false;
         }
-        Long lastUse = cooldowns.get(player.getName().toLowerCase() + ":" + profile.name.toLowerCase());
-        if (lastUse == null) {
-            return false;
-        }
-        return System.currentTimeMillis() < lastUse + (profile.cooldown * 1000L);
+        return Cooldowns.has(player.getUniqueId(), CooldownType.RTP_COOLDOWN);
     }
 
     @Override
     public long getRemainingCooldown(Player player, RtpProfile profile) {
-        Long lastUse = cooldowns.get(player.getName().toLowerCase() + ":" + profile.name.toLowerCase());
-        if (lastUse == null) {
-            return 0;
-        }
-        long diff = (lastUse + (profile.cooldown * 1000L)) - System.currentTimeMillis();
-        return Math.max(0, diff);
+        return Cooldowns.getRemaining(player.getUniqueId(), CooldownType.RTP_COOLDOWN).toMillis();
     }
 
     @Override
@@ -261,6 +253,5 @@ public class DefaultRtpService implements RtpService {
         for (UUID uuid : warmupTasks.keySet()) {
             cancelWarmupTask(uuid);
         }
-        cooldowns.clear();
     }
 }

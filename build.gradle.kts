@@ -38,6 +38,7 @@ subprojects {
         mavenCentral()
 
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://maven.enginehub.org/repo/")
         maven("https://mvn-repo.arim.space/lesser-gpl3/")
         maven("https://repo.extendedclip.com/content/repositories/placeholderapi/") // PlaceholderAPI
         maven("https://repo.codemc.org/repository/maven-public/") {
@@ -45,11 +46,7 @@ subprojects {
                 includeGroup("com.github.retrooper") // PacketEvents
             }
         }
-        maven("https://jitpack.io/") {
-            content {
-                includeGroup("com.github.MilkBowl") // VaultAPI
-            }
-        }
+        maven("https://jitpack.io/")
 
         maven("https://repo.opencollab.dev/maven-snapshots/")
     }

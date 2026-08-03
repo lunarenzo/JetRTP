@@ -27,6 +27,8 @@ dependencies {
     compileOnly(libs.placeholderapi) {
         exclude("me.clip.placeholderapi.libs", "kyori")
     }
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.9-SNAPSHOT")
+    compileOnly("com.github.TechFortress:GriefPrevention:16.18.2")
 
     // Database dependencies - Core
     library(libs.bundles.flyway)
