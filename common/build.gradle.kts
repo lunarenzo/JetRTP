@@ -8,7 +8,6 @@ plugins {
 dependencies {
     // Core dependencies
     api(projects.api)
-    api(libs.morepaperlib)
 
     // API
     api(libs.javasemver) // Required by VersionWatch

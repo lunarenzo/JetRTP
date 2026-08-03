@@ -74,7 +74,6 @@ tasks {
         // Shadow classes
         fun reloc(originPkg: String, targetPkg: String) = relocate(originPkg, "${project.relocationPackage}.${targetPkg}")
 
-        reloc("space.arim.morepaperlib", "morepaperlib")
         reloc("io.github.milkdrinkers.javasemver", "javasemver")
         reloc("io.github.milkdrinkers.versionwatch", "versionwatch")
         reloc("io.github.milkdrinkers.wordweaver", "wordweaver")
