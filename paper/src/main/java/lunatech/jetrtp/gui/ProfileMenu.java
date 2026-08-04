@@ -21,14 +21,18 @@ import java.util.Map;
 
 public class ProfileMenu implements InventoryHolder {
 
-    private static final ItemStack FILLER_ITEM;
-    static {
-        FILLER_ITEM = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta meta = FILLER_ITEM.getItemMeta();
-        if (meta != null) {
-            meta.displayName(Component.empty());
-            FILLER_ITEM.setItemMeta(meta);
-        }
+    private static final Map<Material, ItemStack> FILLER_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static ItemStack getFillerItem(Material material) {
+        return FILLER_CACHE.computeIfAbsent(material, mat -> {
+            ItemStack item = new ItemStack(mat);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.displayName(Component.empty());
+                item.setItemMeta(meta);
+            }
+            return item;
+        });
     }
 
     private final Inventory inventory;
@@ -38,50 +42,66 @@ public class ProfileMenu implements InventoryHolder {
     @SuppressWarnings("this-escape")
     public ProfileMenu(Player player, AbstractJetRTP plugin) {
         this.plugin = plugin;
-        this.inventory = Bukkit.createInventory(this, 27, Component.text("Random Teleport Destinations", NamedTextColor.DARK_GRAY));
+        var guiConfig = plugin.getConfigHandler().getConfig().gui;
 
-        // Fill background
-        for (int i = 0; i < 27; i++) {
-            inventory.setItem(i, FILLER_ITEM);
+        Component titleComponent = io.github.milkdrinkers.colorparser.paper.ColorParser.of(guiConfig.title).build();
+        int invSize = guiConfig.size;
+        if (invSize % 9 != 0 || invSize < 9 || invSize > 54) {
+            invSize = 27;
         }
 
-        Collection<RtpProfile> profiles = plugin.getConfigHandler().getProfiles().values();
-        int slot = 10;
+        this.inventory = Bukkit.createInventory(this, invSize, titleComponent);
 
-        for (RtpProfile profile : profiles) {
-            if (!profile.enabled || !profile.commandEnabled) continue;
-
-            if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profile.name.toLowerCase())) {
-                continue;
+        Material fillerMaterial = Material.GRAY_STAINED_GLASS_PANE;
+        try {
+            if (guiConfig.fillerMaterial != null) {
+                fillerMaterial = Material.valueOf(guiConfig.fillerMaterial.toUpperCase());
             }
+        } catch (Exception ignored) {}
 
-            Material iconMat = Material.COMPASS;
-            if (profile.name.equalsIgnoreCase("nether-rtp") || profile.name.contains("nether")) {
-                iconMat = Material.NETHERRACK;
-            } else if (profile.name.equalsIgnoreCase("end-rtp") || profile.name.contains("end")) {
-                iconMat = Material.ENDER_PEARL;
+        ItemStack filler = getFillerItem(fillerMaterial);
+        for (int i = 0; i < invSize; i++) {
+            inventory.setItem(i, filler);
+        }
+
+        if (guiConfig.layout != null) {
+            for (Map.Entry<Integer, String> entry : guiConfig.layout.entrySet()) {
+                int slot = entry.getKey();
+                if (slot < 0 || slot >= invSize) continue;
+
+                String profileName = entry.getValue();
+                RtpProfile profile = plugin.getConfigHandler().getProfiles().get(profileName.toLowerCase());
+                if (profile == null || !profile.enabled || !profile.commandEnabled) continue;
+
+                if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profile.name.toLowerCase())) {
+                    continue;
+                }
+
+                Material iconMat = Material.COMPASS;
+                if (profile.name.equalsIgnoreCase("nether-rtp") || profile.name.contains("nether")) {
+                    iconMat = Material.NETHERRACK;
+                } else if (profile.name.equalsIgnoreCase("end-rtp") || profile.name.contains("end")) {
+                    iconMat = Material.ENDER_PEARL;
+                }
+
+                ItemStack item = new ItemStack(iconMat);
+                ItemMeta meta = item.getItemMeta();
+                if (meta != null) {
+                    String formattedName = profile.name.substring(0, 1).toUpperCase() + profile.name.substring(1);
+                    meta.displayName(Component.text(formattedName, NamedTextColor.GREEN));
+
+                    List<Component> lore = new ArrayList<>();
+                    lore.add(Component.text("Click to random teleport to this destination!", NamedTextColor.GRAY));
+                    lore.add(Component.empty());
+                    lore.add(Component.text("Cooldown: ", NamedTextColor.GRAY).append(Component.text(profile.cooldown + "s", NamedTextColor.YELLOW)));
+                    lore.add(Component.text("Cost: ", NamedTextColor.GRAY).append(Component.text("$" + profile.cost, NamedTextColor.YELLOW)));
+                    meta.lore(lore);
+                    item.setItemMeta(meta);
+                }
+
+                inventory.setItem(slot, item);
+                slotProfiles.put(slot, profile);
             }
-
-            ItemStack item = new ItemStack(iconMat);
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                String formattedName = profile.name.substring(0, 1).toUpperCase() + profile.name.substring(1);
-                meta.displayName(Component.text(formattedName, NamedTextColor.GREEN));
-                
-                List<Component> lore = new ArrayList<>();
-                lore.add(Component.text("Click to random teleport to this destination!", NamedTextColor.GRAY));
-                lore.add(Component.empty());
-                lore.add(Component.text("Cooldown: ", NamedTextColor.GRAY).append(Component.text(profile.cooldown + "s", NamedTextColor.YELLOW)));
-                lore.add(Component.text("Cost: ", NamedTextColor.GRAY).append(Component.text("$" + profile.cost, NamedTextColor.YELLOW)));
-                meta.lore(lore);
-                item.setItemMeta(meta);
-            }
-
-            inventory.setItem(slot, item);
-            slotProfiles.put(slot, profile);
-            
-            slot += 2;
-            if (slot > 16) break;
         }
     }
 

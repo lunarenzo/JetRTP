@@ -128,4 +128,32 @@ public class PluginConfig implements VersionedConfig {
 
     @Comment("Debug mode")
     public boolean debug = false;
+
+    @Comment("RTP GUI Inventory Settings")
+    public GuiSettings gui = new GuiSettings();
+
+    @ConfigSerializable
+    public static class GuiSettings {
+        @Comment("Should the GUI be opened when running /rtp command without arguments? If false, they will be teleported using default profile settings.")
+        public boolean enabled = true;
+
+        @Comment("The default profile used when running /rtp without arguments and GUI is disabled.")
+        @Setting("default-profile")
+        public String defaultProfile = "default-settings";
+
+        @Comment("Title of the profile selection menu GUI.")
+        public String title = "<dark_gray>Random Teleport Destinations";
+
+        @Comment("Size of the GUI inventory (must be a multiple of 9, e.g. 9, 18, 27, 36, 45, 54).")
+        public int size = 27;
+
+        @Comment("The default filler material for slots that are not occupied by profiles.")
+        @Setting("filler-material")
+        public String fillerMaterial = "GRAY_STAINED_GLASS_PANE";
+
+        @Comment("Map of slot index to profile name. Defines the custom GUI layout.")
+        public Map<Integer, String> layout = Map.of(
+            10, "default-settings"
+        );
+    }
 }
