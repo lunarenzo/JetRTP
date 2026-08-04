@@ -82,4 +82,11 @@ public interface RtpService {
      * @return the last max attempts count, or 0 if they haven't teleported yet
      */
     int getLastAttempts(java.util.UUID uuid);
+
+    /**
+     * Clears cached destination and attempts data for a player when they disconnect.
+     *
+     * @param uuid the player's UUID
+     */
+    void clearPlayerData(java.util.UUID uuid);
 }

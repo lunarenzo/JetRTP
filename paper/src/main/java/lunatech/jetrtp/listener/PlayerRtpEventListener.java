@@ -90,4 +90,9 @@ public class PlayerRtpEventListener implements Listener {
                 });
         }
     }
+
+    @EventHandler
+    public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+        plugin.getRtpService().clearPlayerData(event.getPlayer().getUniqueId());
+    }
 }
