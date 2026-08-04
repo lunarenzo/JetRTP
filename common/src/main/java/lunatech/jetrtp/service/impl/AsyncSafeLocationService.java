@@ -62,9 +62,9 @@ public class AsyncSafeLocationService implements SafeLocationService {
             }
 
             if (y >= profile.bounds.low && y < profile.bounds.high) {
-                Material standOn = chunk.getBlockType(localX, y, localZ);
-                Material legs = chunk.getBlockType(localX, y + 1, localZ);
-                Material head = chunk.getBlockType(localX, y + 2, localZ);
+                Material standOn = chunk.getBlockData(localX, y, localZ).getMaterial();
+                Material legs = chunk.getBlockData(localX, y + 1, localZ).getMaterial();
+                Material head = chunk.getBlockData(localX, y + 2, localZ).getMaterial();
 
                 if (SafeLocationUtils.INSTANCE.isSafeToBeOn(standOn)
                     && SafeLocationUtils.INSTANCE.isSafeToBeIn(legs)
