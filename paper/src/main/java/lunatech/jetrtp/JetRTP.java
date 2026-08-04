@@ -129,6 +129,7 @@ public class JetRTP extends AbstractJetRTP {
         if (cacheService != null) {
             cacheService.shutdown();
         }
+        lunatech.jetrtp.gui.ProfileMenu.clearCache();
         for (Reloadable handler : handlers.reversed()) // If reverse doesn't work implement a new List with your desired disable order
             handler.onDisable(instance);
     }
@@ -150,6 +151,7 @@ public class JetRTP extends AbstractJetRTP {
         if (cacheService != null) {
             cacheService.shutdown();
         }
+        lunatech.jetrtp.gui.ProfileMenu.clearCache();
 
         // 2. Shut down connection pools and message brokers
         databaseHandler.onDisable(this);
@@ -188,6 +190,7 @@ public class JetRTP extends AbstractJetRTP {
         if (cacheService != null) {
             cacheService.shutdown();
         }
+        lunatech.jetrtp.gui.ProfileMenu.clearCache();
 
         // 2. Load configurations from disk
         configHandler.onLoad(this);
