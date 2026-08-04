@@ -156,7 +156,7 @@ public class DefaultRtpService implements RtpService {
                     String msg = profile.failedMessage
                         .replace("%attempts%", String.valueOf(profile.maxAttempts.value))
                         .replace("<attempts>", String.valueOf(profile.maxAttempts.value));
-                    if (plugin.getHookManager().isPlaceholderApiEnabled()) {
+                    if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                         try {
                             Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
                             java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
@@ -239,7 +239,7 @@ public class DefaultRtpService implements RtpService {
                 .replace("<jrtp_coords_y>", String.valueOf(loc.getBlockY()))
                 .replace("<jrtp_coords_z>", String.valueOf(loc.getBlockZ()));
 
-            if (plugin.getHookManager().isPlaceholderApiEnabled()) {
+            if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                 try {
                     Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
                     java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
