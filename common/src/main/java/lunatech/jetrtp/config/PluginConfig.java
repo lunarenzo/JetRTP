@@ -129,31 +129,56 @@ public class PluginConfig implements VersionedConfig {
     @Comment("Debug mode")
     public boolean debug = false;
 
-    @Comment("RTP GUI Inventory Settings")
-    public GuiSettings gui = new GuiSettings();
+    @Comment("RTP GUI Settings")
+    public RtpGuiConfig gui = new RtpGuiConfig();
 
     @ConfigSerializable
-    public static class GuiSettings {
-        @Comment("Should the GUI be opened when running /rtp command without arguments? If false, they will be teleported using default profile settings.")
+    public static class RtpGuiConfig {
+        @Comment("Should the GUI menu be shown when players run /rtp?")
         public boolean enabled = true;
 
-        @Comment("The default profile used when running /rtp without arguments and GUI is disabled.")
+        @Comment("The default profile to execute when GUI is disabled and /rtp is run without arguments")
         @Setting("default-profile")
         public String defaultProfile = "default-settings";
 
-        @Comment("Title of the profile selection menu GUI.")
+        @Comment("Title of the GUI menu (supports MiniMessage & color codes via ColorParser)")
         public String title = "<dark_gray>Random Teleport Destinations";
 
-        @Comment("Size of the GUI inventory (must be a multiple of 9, e.g. 9, 18, 27, 36, 45, 54).")
-        public int size = 27;
+        @Comment("Number of rows for the GUI (1-6)")
+        public int rows = 3;
 
-        @Comment("The default filler material for slots that are not occupied by profiles.")
-        @Setting("filler-material")
-        public String fillerMaterial = "GRAY_STAINED_GLASS_PANE";
+        @Comment("The background fill item material")
+        @Setting("fill-item")
+        public String fillItem = "GRAY_STAINED_GLASS_PANE";
 
-        @Comment("Map of slot index to profile name. Defines the custom GUI layout.")
-        public Map<Integer, String> layout = Map.of(
-            10, "default-settings"
+        @Comment("Custom items mapped to slots in the GUI")
+        public Map<String, RtpGuiItemConfig> items = Map.of(
+            "10", new RtpGuiItemConfig("COMPASS", "<green>Overworld RTP",
+                java.util.List.of("<gray>Click to random teleport to this destination!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
+                "rtp:default-settings"),
+            "12", new RtpGuiItemConfig("NETHERRACK", "<red>Nether RTP",
+                java.util.List.of("<gray>Click to random teleport to the Nether!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
+                "rtp:nether-rtp"),
+            "14", new RtpGuiItemConfig("ENDER_PEARL", "<purple>End RTP",
+                java.util.List.of("<gray>Click to random teleport to the End!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
+                "rtp:end-rtp")
         );
+    }
+
+    @ConfigSerializable
+    public static class RtpGuiItemConfig {
+        public String material;
+        public String name;
+        public java.util.List<String> lore;
+        public String action;
+
+        public RtpGuiItemConfig() {}
+
+        public RtpGuiItemConfig(String material, String name, java.util.List<String> lore, String action) {
+            this.material = material;
+            this.name = name;
+            this.lore = lore;
+            this.action = action;
+        }
     }
 }
