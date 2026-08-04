@@ -157,13 +157,13 @@ public class PluginConfig implements VersionedConfig {
 
         @Comment("Custom items mapped to slots in the GUI")
         public Map<String, RtpGuiItemConfig> items = Map.of(
-            "10", new RtpGuiItemConfig("COMPASS", "<green>Overworld RTP",
+            "11", new RtpGuiItemConfig("COMPASS", "<green>Overworld RTP",
                 java.util.List.of("<gray>Click to random teleport to this destination!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
                 "rtp:default-settings"),
-            "12", new RtpGuiItemConfig("NETHERRACK", "<red>Nether RTP",
+            "13", new RtpGuiItemConfig("NETHERRACK", "<red>Nether RTP",
                 java.util.List.of("<gray>Click to random teleport to the Nether!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
                 "rtp:nether-rtp"),
-            "14", new RtpGuiItemConfig("ENDER_PEARL", "<purple>End RTP",
+            "15", new RtpGuiItemConfig("ENDER_PEARL", "<light_purple>End RTP",
                 java.util.List.of("<gray>Click to random teleport to the End!", "", "<gray>Cooldown: <yellow>30s", "<gray>Cost: <yellow>$0.0"),
                 "rtp:end-rtp")
         );

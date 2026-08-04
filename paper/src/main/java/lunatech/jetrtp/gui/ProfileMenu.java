@@ -12,6 +12,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,12 +120,12 @@ public class ProfileMenu implements InventoryHolder {
                     ItemMeta meta = item.getItemMeta();
                     if (meta != null) {
                         if (itemConfig.name != null) {
-                            meta.displayName(io.github.milkdrinkers.colorparser.paper.ColorParser.of(itemConfig.name).legacy().build());
+                            meta.displayName(io.github.milkdrinkers.colorparser.paper.ColorParser.of(itemConfig.name).legacy().build().decoration(TextDecoration.ITALIC, false));
                         }
                         if (itemConfig.lore != null) {
                             List<Component> loreList = new ArrayList<>();
                             for (String line : itemConfig.lore) {
-                                loreList.add(io.github.milkdrinkers.colorparser.paper.ColorParser.of(line).legacy().build());
+                                loreList.add(io.github.milkdrinkers.colorparser.paper.ColorParser.of(line).legacy().build().decoration(TextDecoration.ITALIC, false));
                             }
                             meta.lore(loreList);
                         }
