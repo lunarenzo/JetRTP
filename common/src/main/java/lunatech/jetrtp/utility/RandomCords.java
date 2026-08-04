@@ -4,22 +4,22 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Utility class for generating random coordinates in various shapes.
- * Packed as primitive long to eliminate heap allocation.
+ * Optimized using ThreadLocalRandom and primitive math functions.
  */
 public final class RandomCords {
 
     private RandomCords() {}
 
-    public static int getX(long packed) {
+    public static long pack(int x, int z) {
+        return ((long) x << 32) | (z & 0xFFFFFFFFL);
+    }
+
+    public static int unpackX(long packed) {
         return (int) (packed >> 32);
     }
 
-    public static int getZ(long packed) {
+    public static int unpackZ(long packed) {
         return (int) packed;
-    }
-
-    public static long pack(int x, int z) {
-        return ((long) x << 32) | (z & 0xFFFFFFFFL);
     }
 
     /**
@@ -42,9 +42,7 @@ public final class RandomCords {
             radius = Math.sqrt(minSq + rand.nextDouble() * (maxSq - minSq));
         }
 
-        int x = (int) (radius * Math.cos(angle));
-        int z = (int) (radius * Math.sin(angle));
-        return pack(x, z);
+        return pack((int) (radius * Math.cos(angle)), (int) (radius * Math.sin(angle)));
     }
 
     /**
