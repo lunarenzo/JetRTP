@@ -69,8 +69,13 @@ public final class HikariConfigFactory {
         }
 
         // Set pool configuration
-        hikariConfig.setMaximumPoolSize(config.getMaxPoolSize());
-        hikariConfig.setMinimumIdle(config.getMinIdle());
+        if (databaseType == DatabaseType.SQLITE) {
+            hikariConfig.setMaximumPoolSize(1);
+            hikariConfig.setMinimumIdle(1);
+        } else {
+            hikariConfig.setMaximumPoolSize(config.getMaxPoolSize());
+            hikariConfig.setMinimumIdle(config.getMinIdle());
+        }
         hikariConfig.setMaxLifetime(config.getMaxLifeTime());
         hikariConfig.setKeepaliveTime(config.getKeepAliveTime());
         hikariConfig.setConnectionTimeout(config.getConnectionTimeout());
