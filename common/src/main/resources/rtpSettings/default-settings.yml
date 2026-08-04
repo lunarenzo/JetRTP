@@ -12,7 +12,7 @@ enabled: true
 # Controls whether players can trigger this profile using commands (e.g., /rtp default-settings).
 command-enabled: true
 
-# If true, players require explicit permission to use this profile (e.g., jakesrtp.use.default-settings).
+# If true, players require explicit permission to use this profile (e.g., jetrtp.use.default-settings).
 # If false, any player with basic permission can use it.
 require-explicit-permission: false
 

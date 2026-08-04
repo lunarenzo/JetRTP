@@ -99,7 +99,7 @@ public class ProfileMenu implements InventoryHolder {
                 String action = itemConfig.action;
                 if (action != null && action.startsWith("rtp:")) {
                     String profileName = action.substring(4).trim().toLowerCase();
-                    if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profileName)) {
+                    if (!player.hasPermission("jetrtp.usebyname") && !player.hasPermission("jetrtp.use." + profileName)) {
                         continue; // Hide profile if player has no permission
                     }
                 }

@@ -55,8 +55,8 @@ public class DefaultRtpService implements RtpService {
         }
 
         boolean hasWarmup = profile.warmup.time > 0
-            && !player.hasPermission("jakesrtp.nowarmup")
-            && !player.hasPermission("jakesrtp.nowarmup." + profile.name.toLowerCase());
+            && !player.hasPermission("jetrtp.nowarmup")
+            && !player.hasPermission("jetrtp.nowarmup." + profile.name.toLowerCase());
 
         if (hasWarmup) {
             startWarmup(player, profile, future);
@@ -261,7 +261,7 @@ public class DefaultRtpService implements RtpService {
 
     @Override
     public boolean isOnCooldown(Player player, RtpProfile profile) {
-        if (player.hasPermission("jakesrtp.nocooldown") || player.hasPermission("jakesrtp.nocooldown." + profile.name.toLowerCase())) {
+        if (player.hasPermission("jetrtp.nocooldown") || player.hasPermission("jetrtp.nocooldown." + profile.name.toLowerCase())) {
             return false;
         }
         return Cooldowns.has(player.getUniqueId(), CooldownType.RTP_COOLDOWN);
