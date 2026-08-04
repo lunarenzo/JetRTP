@@ -17,9 +17,8 @@ public class PAPIExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    @SuppressWarnings("UnstableApiUsage")
     public @NotNull String getIdentifier() {
-        return plugin.getPluginMeta().getName().replace(' ', '_').toLowerCase();
+        return "jrtp";
     }
 
     @Override
@@ -41,9 +40,15 @@ public class PAPIExpansion extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onRequest(OfflinePlayer p, @NotNull String params) {
-        return switch (params) {
-            case "jetrtp" -> "placeholder text";
-            case "jetrtp2" -> "placeholder text2";
+        if (p == null) return null;
+        org.bukkit.Location loc = plugin.getRtpService().getLastDestination(p.getUniqueId());
+        if (loc == null) return "";
+
+        return switch (params.toLowerCase()) {
+            case "destination_world" -> loc.getWorld().getName();
+            case "coords_x" -> String.valueOf(loc.getBlockX());
+            case "coords_y" -> String.valueOf(loc.getBlockY());
+            case "coords_z" -> String.valueOf(loc.getBlockZ());
             default -> null;
         };
     }

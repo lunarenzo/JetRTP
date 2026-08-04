@@ -66,4 +66,12 @@ public interface RtpService {
      * Shuts down active warmups and clears state.
      */
     void shutdown();
+
+    /**
+     * Gets the last teleportation destination for the player.
+     *
+     * @param uuid the player's UUID
+     * @return the last destination location, or null if they haven't teleported yet
+     */
+    org.bukkit.Location getLastDestination(java.util.UUID uuid);
 }

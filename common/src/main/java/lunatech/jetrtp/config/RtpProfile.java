@@ -76,9 +76,13 @@ public class RtpProfile implements VersionedConfig {
     }
 
     @Setting("then-execute")
-    public List<String> thenExecute = new ArrayList<>(List.of(
-        "tellraw %PLAYER% {\"text\":\"You have been teleported to %LOCATION% in %WORLD%!\"}"
-    ));
+    public List<String> thenExecute = new ArrayList<>();
+
+    @Setting("success-message")
+    public String successMessage = "<green>You have been randomly teleported to %jrtp_destination_world% (X: %jrtp_coords_x%, Y: %jrtp_coords_y%, Z: %jrtp_coords_z%)</green>";
+
+    @Setting("failed-message")
+    public String failedMessage = "<red>Failed to find a safe location to teleport to after %attempts% attempts.</red>";
 
     public double cost = 0.0;
 

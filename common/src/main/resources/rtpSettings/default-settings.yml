@@ -25,8 +25,9 @@ warmup:
   subtitle-cancel: '&fᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ʜᴀѕ ʙᴇᴇɴ ɪɴᴛᴇʀʀᴜᴘᴛᴇᴅ!'
   sounds-cancel:
     - 'BLOCK_FIRE_EXTINGUISH:1.0:1.0'
-then-execute:
-  - 'tellraw %PLAYER% {"text":"You have been teleported to %LOCATION% in %WORLD%!"}'
+then-execute: []
+success-message: "<green>You have been randomly teleported to %jrtp_destination_world% (X: %jrtp_coords_x%, Y: %jrtp_coords_y%, Z: %jrtp_coords_z%)</green>"
+failed-message: "<red>Failed to find a safe location to teleport to after %attempts% attempts.</red>"
 cost: 0.0
 bounds:
   low: 32
