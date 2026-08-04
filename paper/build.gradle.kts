@@ -74,6 +74,12 @@ tasks {
             exclude(dependency("org.spongepowered:.*"))
         }
 
+        dependencies {
+            exclude(dependency("org.yaml:snakeyaml:.*"))
+            exclude(dependency("com.google.code.gson:gson:.*"))
+            exclude(dependency("com.google.errorprone:.*"))
+        }
+
         // Shadow classes
         fun reloc(originPkg: String, targetPkg: String) = relocate(originPkg, "${project.relocationPackage}.${targetPkg}")
 
@@ -82,17 +88,12 @@ tasks {
         reloc("io.github.milkdrinkers.crate", "crate")
         reloc("io.github.milkdrinkers.colorparser", "colorparser")
         reloc("io.github.milkdrinkers.threadutil", "threadutil")
-        reloc("org.snakeyaml", "snakeyaml")
         reloc("org.json", "json")
         reloc("com.zaxxer.hikari", "hikaricp")
         reloc("org.bstats", "bstats")
 
         reloc("io.leangen.geantyref", "geantyref")
-        reloc("org.yaml", "yaml")
         reloc("org.spongepowered", "spongepowered")
-
-        reloc("com.google.errorprone", "google")
-        reloc("com.google.gson", "google")
 
         mergeServiceFiles()
     }
