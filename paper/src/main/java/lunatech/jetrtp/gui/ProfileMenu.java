@@ -20,6 +20,16 @@ import java.util.Map;
 
 public class ProfileMenu implements InventoryHolder {
 
+    private static final Map<String, ItemStack> itemCache = new java.util.concurrent.ConcurrentHashMap<>();
+    private static ItemStack fillerCache = null;
+    private static Component titleCache = null;
+
+    public static void clearCache() {
+        itemCache.clear();
+        fillerCache = null;
+        titleCache = null;
+    }
+
     private final Inventory inventory;
     private final AbstractJetRTP plugin;
     private final Map<Integer, String> slotActions = new HashMap<>();
@@ -33,25 +43,37 @@ public class ProfileMenu implements InventoryHolder {
         int rows = Math.clamp(guiConfig.rows, 1, 6);
         int size = rows * 9;
         
-        Component titleComponent = io.github.milkdrinkers.colorparser.paper.ColorParser.of(guiConfig.title).legacy().build();
+        Component titleComponent;
+        if (titleCache != null) {
+            titleComponent = titleCache;
+        } else {
+            titleComponent = io.github.milkdrinkers.colorparser.paper.ColorParser.of(guiConfig.title).legacy().build();
+            titleCache = titleComponent;
+        }
         this.inventory = Bukkit.createInventory(this, size, titleComponent);
 
         // Fill background
-        Material fillMat = Material.GRAY_STAINED_GLASS_PANE;
-        try {
-            if (guiConfig.fillItem != null) {
-                fillMat = Material.valueOf(guiConfig.fillItem.toUpperCase());
+        ItemStack filler;
+        if (fillerCache != null) {
+            filler = fillerCache.clone();
+        } else {
+            Material fillMat = Material.GRAY_STAINED_GLASS_PANE;
+            try {
+                if (guiConfig.fillItem != null) {
+                    fillMat = Material.valueOf(guiConfig.fillItem.toUpperCase());
+                }
+            } catch (Exception ignored) {}
+            
+            filler = new ItemStack(fillMat);
+            ItemMeta fillerMeta = filler.getItemMeta();
+            if (fillerMeta != null) {
+                fillerMeta.displayName(Component.empty());
+                filler.setItemMeta(fillerMeta);
             }
-        } catch (Exception ignored) {}
-        
-        ItemStack filler = new ItemStack(fillMat);
-        ItemMeta fillerMeta = filler.getItemMeta();
-        if (fillerMeta != null) {
-            fillerMeta.displayName(Component.empty());
-            filler.setItemMeta(fillerMeta);
+            fillerCache = filler.clone();
         }
         for (int i = 0; i < size; i++) {
-            inventory.setItem(i, filler);
+            inventory.setItem(i, filler.clone());
         }
 
         // Add custom items
@@ -81,27 +103,34 @@ public class ProfileMenu implements InventoryHolder {
                     }
                 }
                 
-                Material itemMat = Material.BARRIER;
-                try {
-                    if (itemConfig.material != null) {
-                        itemMat = Material.valueOf(itemConfig.material.toUpperCase());
-                    }
-                } catch (Exception ignored) {}
-                
-                ItemStack item = new ItemStack(itemMat);
-                ItemMeta meta = item.getItemMeta();
-                if (meta != null) {
-                    if (itemConfig.name != null) {
-                        meta.displayName(io.github.milkdrinkers.colorparser.paper.ColorParser.of(itemConfig.name).legacy().build());
-                    }
-                    if (itemConfig.lore != null) {
-                        List<Component> loreList = new ArrayList<>();
-                        for (String line : itemConfig.lore) {
-                            loreList.add(io.github.milkdrinkers.colorparser.paper.ColorParser.of(line).legacy().build());
+                ItemStack item;
+                String cacheKey = entry.getKey();
+                if (itemCache.containsKey(cacheKey)) {
+                    item = itemCache.get(cacheKey).clone();
+                } else {
+                    Material itemMat = Material.BARRIER;
+                    try {
+                        if (itemConfig.material != null) {
+                            itemMat = Material.valueOf(itemConfig.material.toUpperCase());
                         }
-                        meta.lore(loreList);
+                    } catch (Exception ignored) {}
+                    
+                    item = new ItemStack(itemMat);
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        if (itemConfig.name != null) {
+                            meta.displayName(io.github.milkdrinkers.colorparser.paper.ColorParser.of(itemConfig.name).legacy().build());
+                        }
+                        if (itemConfig.lore != null) {
+                            List<Component> loreList = new ArrayList<>();
+                            for (String line : itemConfig.lore) {
+                                loreList.add(io.github.milkdrinkers.colorparser.paper.ColorParser.of(line).legacy().build());
+                            }
+                            meta.lore(loreList);
+                        }
+                        item.setItemMeta(meta);
                     }
-                    item.setItemMeta(meta);
+                    itemCache.put(cacheKey, item.clone());
                 }
                 
                 inventory.setItem(slot, item);
