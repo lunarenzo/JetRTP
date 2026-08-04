@@ -25,6 +25,7 @@ public class DefaultRtpService implements RtpService {
 
     private final Map<UUID, ScheduledTask> warmupTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Location> warmupStartLocations = new ConcurrentHashMap<>();
+    private final Map<UUID, Location> lastDestinations = new ConcurrentHashMap<>();
 
     public DefaultRtpService(
         AbstractJetRTP plugin,
@@ -151,6 +152,15 @@ public class DefaultRtpService implements RtpService {
                 cacheService.recordSearchTime(profile, duration);
                 teleportPlayer(player, profile, loc, future);
             }).exceptionally(ex -> {
+                if (profile.failedMessage != null && !profile.failedMessage.trim().isEmpty()) {
+                    String msg = profile.failedMessage
+                        .replace("%attempts%", String.valueOf(profile.maxAttempts.value))
+                        .replace("<attempts>", String.valueOf(profile.maxAttempts.value));
+                    if (plugin.getHookManager().isPlaceholderApiEnabled()) {
+                        msg = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, msg);
+                    }
+                    player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
+                }
                 future.complete(false);
                 return null;
             });
@@ -197,7 +207,12 @@ public class DefaultRtpService implements RtpService {
             } catch (Exception ignored) {}
         }
 
+        lastDestinations.put(player.getUniqueId(), loc.clone());
+
         for (String cmd : profile.thenExecute) {
+            if (cmd == null || cmd.trim().isEmpty()) {
+                continue;
+            }
             String filled = cmd
                 .replace("%player%", player.getName())
                 .replace("%PLAYER%", player.getName())
@@ -207,6 +222,23 @@ public class DefaultRtpService implements RtpService {
                 .replace("%y%", String.valueOf(loc.getBlockY()))
                 .replace("%z%", String.valueOf(loc.getBlockZ()));
             plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), filled);
+        }
+
+        if (profile.successMessage != null && !profile.successMessage.trim().isEmpty()) {
+            String msg = profile.successMessage
+                .replace("%jrtp_destination_world%", loc.getWorld().getName())
+                .replace("%jrtp_coords_x%", String.valueOf(loc.getBlockX()))
+                .replace("%jrtp_coords_y%", String.valueOf(loc.getBlockY()))
+                .replace("%jrtp_coords_z%", String.valueOf(loc.getBlockZ()))
+                .replace("<jrtp_destination_world>", loc.getWorld().getName())
+                .replace("<jrtp_coords_x>", String.valueOf(loc.getBlockX()))
+                .replace("<jrtp_coords_y>", String.valueOf(loc.getBlockY()))
+                .replace("<jrtp_coords_z>", String.valueOf(loc.getBlockZ()));
+
+            if (plugin.getHookManager().isPlaceholderApiEnabled()) {
+                msg = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, msg);
+            }
+            player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
         }
 
         // Publish cross-server RTP notification
@@ -318,5 +350,10 @@ public class DefaultRtpService implements RtpService {
             return org.bukkit.Sound.valueOf(soundName.toUpperCase());
         } catch (Exception ignored) {}
         return null;
+    }
+
+    @Override
+    public Location getLastDestination(UUID uuid) {
+        return lastDestinations.get(uuid);
     }
 }
