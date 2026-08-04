@@ -70,6 +70,9 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
+        minimize {
+            exclude(dependency("org.spongepowered:.*"))
+        }
 
         // Shadow classes
         fun reloc(originPkg: String, targetPkg: String) = relocate(originPkg, "${project.relocationPackage}.${targetPkg}")
