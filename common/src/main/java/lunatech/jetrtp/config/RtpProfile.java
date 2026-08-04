@@ -8,10 +8,8 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.block.Biome;
 
 @ConfigSerializable
 public class RtpProfile implements VersionedConfig {
@@ -129,7 +127,7 @@ public class RtpProfile implements VersionedConfig {
         public boolean command = false;
     }
 
-    public transient EnumSet<Biome> resolvedExcludedBiomes;
+    public transient List<String> lowercaseExcludes;
 
     @Override
     @Exclude
@@ -146,15 +144,10 @@ public class RtpProfile implements VersionedConfig {
     @Override
     @Exclude
     public void validate() throws ConfigValidationException {
-        resolvedExcludedBiomes = EnumSet.noneOf(Biome.class);
+        lowercaseExcludes = new ArrayList<>();
         if (excludedBiomes != null) {
             for (String ex : excludedBiomes) {
-                String term = ex.toLowerCase();
-                for (Biome biome : Biome.values()) {
-                    if (biome.name().toLowerCase().contains(term)) {
-                        resolvedExcludedBiomes.add(biome);
-                    }
-                }
+                lowercaseExcludes.add(ex.toLowerCase());
             }
         }
     }

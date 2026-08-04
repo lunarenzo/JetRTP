@@ -75,7 +75,16 @@ public class AsyncSafeLocationService implements SafeLocationService {
                         && world.getWorldBorder().isInside(potentialLoc)) {
 
                         org.bukkit.block.Biome biome = world.getBiome(x, y, z);
-                        boolean isExcluded = profile.resolvedExcludedBiomes != null && profile.resolvedExcludedBiomes.contains(biome);
+                        boolean isExcluded = false;
+                        if (profile.lowercaseExcludes != null) {
+                            String biomeKey = biome.getKey().getKey();
+                            for (String ex : profile.lowercaseExcludes) {
+                                if (biomeKey.contains(ex)) {
+                                    isExcluded = true;
+                                    break;
+                                }
+                            }
+                        }
 
                         if (!isExcluded) {
                             Location target = potentialLoc.clone().add(0.5, 1.0, 0.5);
