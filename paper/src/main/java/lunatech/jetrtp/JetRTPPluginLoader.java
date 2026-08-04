@@ -1,6 +1,5 @@
 package lunatech.jetrtp;
 
-import com.google.gson.Gson;
 import io.papermc.paper.plugin.loader.PluginClasspathBuilder;
 import io.papermc.paper.plugin.loader.PluginLoader;
 import io.papermc.paper.plugin.loader.library.impl.MavenLibraryResolver;
@@ -35,7 +34,8 @@ public class JetRTPPluginLoader implements PluginLoader {
     /**
      * Load the plugin libraries from the `paper-libraries.json` file.
      * <p>
-     * The file is read using GSON and parsed into a {@link PluginLibraries} instance.
+     * The file is parsed without external JSON libraries (like GSON) to prevent
+     * classloader conflicts during PluginLoader execution.
      *
      * @return A {@link PluginLibraries} instance containing repositories and dependencies.
      */
@@ -50,7 +50,67 @@ public class JetRTPPluginLoader implements PluginLoader {
                 final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                 final BufferedReader br = new BufferedReader(isr)
             ) {
-                return new Gson().fromJson(br, PluginLibraries.class);
+                java.util.Map<String, String> repositories = new java.util.LinkedHashMap<>();
+                java.util.List<String> dependencies = new java.util.ArrayList<>();
+
+                String line;
+                boolean inRepositories = false;
+                boolean inDependencies = false;
+
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty()) continue;
+
+                    if (line.startsWith("\"repositories\"")) {
+                        inRepositories = true;
+                        inDependencies = false;
+                        continue;
+                    }
+                    if (line.startsWith("\"dependencies\"")) {
+                        inDependencies = true;
+                        inRepositories = false;
+                        continue;
+                    }
+
+                    if (line.contains("}")) {
+                        inRepositories = false;
+                    }
+                    if (line.contains("]")) {
+                        inDependencies = false;
+                    }
+
+                    if (inRepositories) {
+                        int firstQuote = line.indexOf('"');
+                        if (firstQuote != -1) {
+                            int secondQuote = line.indexOf('"', firstQuote + 1);
+                            if (secondQuote != -1) {
+                                String key = line.substring(firstQuote + 1, secondQuote);
+                                int colon = line.indexOf(':', secondQuote + 1);
+                                if (colon != -1) {
+                                    int thirdQuote = line.indexOf('"', colon + 1);
+                                    if (thirdQuote != -1) {
+                                        int fourthQuote = line.indexOf('"', thirdQuote + 1);
+                                        if (fourthQuote != -1) {
+                                            String val = line.substring(thirdQuote + 1, fourthQuote);
+                                            repositories.put(key, val);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if (inDependencies) {
+                        int firstQuote = line.indexOf('"');
+                        if (firstQuote != -1) {
+                            int secondQuote = line.indexOf('"', firstQuote + 1);
+                            if (secondQuote != -1) {
+                                String dep = line.substring(firstQuote + 1, secondQuote);
+                                dependencies.add(dep);
+                            }
+                        }
+                    }
+                }
+
+                return new PluginLibraries(repositories, dependencies);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
