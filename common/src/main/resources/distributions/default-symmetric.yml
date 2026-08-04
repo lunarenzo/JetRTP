@@ -1,15 +1,73 @@
+# ==============================================================================
+# JetRTP Distribution Configuration - Symmetric Settings
+# ==============================================================================
+# This file defines the mathematical distribution and coordinate generation bounds
+# for randomly choosing a teleport location.
+# ==============================================================================
+
+# 1. SHAPE OF THE RTP REGION
+# Options:
+#   - square  : A square boundary bounded by radius.min and radius.max.
+#   - circle  : A circular boundary bounded by radius.min and radius.max.
+#   - rectangle: A rectangular area defined by size (x-width and z-width).
+#   - world-border : Teleports player anywhere inside the world's actual border.
 shape: square
+
+# 2. THE CENTER OF RANDOM TELEPORTATION
+# This defines the coordinate origin (0, 0 in relation to the offset) of the shape.
 center:
+  # option:
+  #   - a : Uses the World Spawn point as the center.
+  #   - b : Uses the Player's current location as the center (makes RTP relative).
+  #   - c : Uses the custom coordinates defined under 'c-custom' below.
   option: a
+  
+  # Reference labels (for documentation/readability)
   a: 'world spawn'
   b: 'players current location'
+  
+  # Custom coordinates used if option is set to 'c'
   c-custom:
     x: 0
     z: 0
+
+# 3. RADIUS BOUNDS (Used for 'square' and 'circle' shapes)
 radius:
+  # The maximum distance in blocks a player can teleport from the center.
   max: 2000
+  # The minimum distance in blocks. Creates a central exclusion zone
+  # (no-teleport ring) to prevent players landing too close to the center/spawn.
   min: 1000
+
+# 4. GAUSSIAN (NORMAL) DISTRIBUTION
+# Distributes coordinates using a bell-curve model rather than a flat random spread.
 gaussian-distribution:
+  # Set to true to enable Gaussian distribution.
   enabled: false
+  # Shrink factor (standard deviation divider). A higher number gathers 
+  # teleport coordinates tighter around the distribution center.
   shrink: 4
+  # The center peak bias of the distribution (0.0 to 1.0).
+  # Determines where the highest density of teleport landings will be.
   center: 0.25
+
+# 5. RECTANGULAR REGION SIZING (Only used if shape is set to 'rectangle')
+size:
+  # The total width of the rectangle along the X-axis.
+  x-width: 2000
+  # The total width of the rectangle along the Z-axis.
+  z-width: 1600
+
+# 6. CENTRAL EXCLUSION GAP (Only used if shape is set to 'rectangle')
+gap:
+  # Set to true to exclude a rectangular portion inside the rectangular bounds.
+  enabled: false
+  # The width of the exclusion gap along the X-axis.
+  x-width: 700
+  # The width of the exclusion gap along the Z-axis.
+  z-width: 700
+  # The X coordinate center of the exclusion gap.
+  x-center: 150
+  # The Z coordinate center of the exclusion gap.
+  z-center: 150
+
