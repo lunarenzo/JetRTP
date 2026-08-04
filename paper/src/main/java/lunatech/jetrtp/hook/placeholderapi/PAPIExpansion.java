@@ -41,6 +41,11 @@ public class PAPIExpansion extends PlaceholderExpansion {
     @Override
     public @Nullable String onRequest(OfflinePlayer p, @NotNull String params) {
         if (p == null) return null;
+
+        if (params.equalsIgnoreCase("attempts")) {
+            return String.valueOf(plugin.getRtpService().getLastAttempts(p.getUniqueId()));
+        }
+
         org.bukkit.Location loc = plugin.getRtpService().getLastDestination(p.getUniqueId());
         if (loc == null) return "";
 

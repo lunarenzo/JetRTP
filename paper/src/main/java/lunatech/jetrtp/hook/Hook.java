@@ -4,6 +4,7 @@ import lunatech.jetrtp.hook.bstats.BStatsHook;
 import lunatech.jetrtp.hook.packetevents.PacketEventsHook;
 import lunatech.jetrtp.hook.placeholderapi.PAPIHook;
 import lunatech.jetrtp.hook.vault.VaultHook;
+import lunatech.jetrtp.hook.miniplaceholders.MiniPlaceholdersHook;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +16,8 @@ public enum Hook {
     BStats(BStatsHook.class, null, false),
     PAPI(PAPIHook.class, "PlaceholderAPI", true),
     PacketEvents(PacketEventsHook.class, "PacketEvents", true),
-    Vault(VaultHook.class, "Vault", true);
+    Vault(VaultHook.class, "Vault", true),
+    MiniPlaceholders(MiniPlaceholdersHook.class, "MiniPlaceholders", true);
 
     private final @NotNull Class<? extends AbstractHook> hookClass; // The hook class used by this hook
     private final @Nullable String pluginName; // The plugin name used by this hook or null if not applicable

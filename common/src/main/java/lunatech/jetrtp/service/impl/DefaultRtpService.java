@@ -26,6 +26,7 @@ public class DefaultRtpService implements RtpService {
     private final Map<UUID, ScheduledTask> warmupTasks = new ConcurrentHashMap<>();
     private final Map<UUID, Location> warmupStartLocations = new ConcurrentHashMap<>();
     private final Map<UUID, Location> lastDestinations = new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> lastAttempts = new ConcurrentHashMap<>();
 
     public DefaultRtpService(
         AbstractJetRTP plugin,
@@ -152,6 +153,7 @@ public class DefaultRtpService implements RtpService {
                 cacheService.recordSearchTime(profile, duration);
                 teleportPlayer(player, profile, loc, future);
             }).exceptionally(ex -> {
+                lastAttempts.put(player.getUniqueId(), profile.maxAttempts.value);
                 if (profile.failedMessage != null && !profile.failedMessage.trim().isEmpty()) {
                     String msg = profile.failedMessage
                         .replace("%attempts%", String.valueOf(profile.maxAttempts.value))
@@ -205,6 +207,7 @@ public class DefaultRtpService implements RtpService {
         }
 
         lastDestinations.put(player.getUniqueId(), loc.clone());
+        lastAttempts.put(player.getUniqueId(), profile.maxAttempts.value);
 
         for (String cmd : profile.thenExecute) {
             if (cmd == null || cmd.trim().isEmpty()) {
@@ -349,5 +352,10 @@ public class DefaultRtpService implements RtpService {
     @Override
     public Location getLastDestination(UUID uuid) {
         return lastDestinations.get(uuid);
+    }
+
+    @Override
+    public int getLastAttempts(UUID uuid) {
+        return lastAttempts.getOrDefault(uuid, 0);
     }
 }
