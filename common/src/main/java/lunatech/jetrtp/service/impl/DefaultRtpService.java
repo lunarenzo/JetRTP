@@ -316,6 +316,14 @@ public class DefaultRtpService implements RtpService {
         for (UUID uuid : warmupTasks.keySet()) {
             cancelWarmupTask(uuid);
         }
+        lastDestinations.clear();
+        lastAttempts.clear();
+    }
+
+    @Override
+    public void clearPlayerData(UUID uuid) {
+        lastDestinations.remove(uuid);
+        lastAttempts.remove(uuid);
     }
 
     private void showTitle(Player player, String title, String subtitle, int fadeInTicks, int stayTicks, int fadeOutTicks) {
