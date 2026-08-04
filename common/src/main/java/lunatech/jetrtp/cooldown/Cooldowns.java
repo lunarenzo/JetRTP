@@ -1,8 +1,5 @@
 package lunatech.jetrtp.cooldown;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -70,8 +67,10 @@ public final class Cooldowns {
      * ensuring thread safety for concurrent operations.
      * </p>
      */
+    private record CooldownKey(UUID uuid, CooldownType type) {}
+
     private static final class CooldownStorage {
-        private final Table<UUID, CooldownType, Instant> cooldowns = Tables.synchronizedTable(HashBasedTable.create());
+        private final java.util.concurrent.ConcurrentHashMap<CooldownKey, Instant> cooldowns = new java.util.concurrent.ConcurrentHashMap<>();
 
         private CooldownStorage() {
         }
@@ -86,7 +85,7 @@ public final class Cooldowns {
          */
         @Nullable
         public Instant set(UUID uuid, CooldownType type, Instant expiresAt) {
-            return cooldowns.put(uuid, type, expiresAt);
+            return cooldowns.put(new CooldownKey(uuid, type), expiresAt);
         }
 
         /**
@@ -98,7 +97,7 @@ public final class Cooldowns {
          */
         @Nullable
         public Instant get(UUID uuid, CooldownType type) {
-            return cooldowns.get(uuid, type);
+            return cooldowns.get(new CooldownKey(uuid, type));
         }
 
         /**
@@ -109,7 +108,7 @@ public final class Cooldowns {
          * @return true if the player has an active cooldown, false otherwise
          */
         public boolean has(UUID uuid, CooldownType type) {
-            final @Nullable Instant cooldown = cooldowns.get(uuid, type);
+            final @Nullable Instant cooldown = cooldowns.get(new CooldownKey(uuid, type));
             return cooldown != null && Instant.now().isBefore(cooldown);
         }
 
@@ -122,7 +121,7 @@ public final class Cooldowns {
          */
         @Nullable
         public Instant remove(UUID uuid, CooldownType type) {
-            return cooldowns.remove(uuid, type);
+            return cooldowns.remove(new CooldownKey(uuid, type));
         }
 
         /**
@@ -131,7 +130,7 @@ public final class Cooldowns {
          * @param uuid the player's UUID
          */
         public void removeAll(UUID uuid) {
-            cooldowns.row(uuid).clear();
+            cooldowns.keySet().removeIf(key -> key.uuid().equals(uuid));
         }
 
         /**
@@ -146,12 +145,13 @@ public final class Cooldowns {
          * @return the remaining cooldown duration, or {@link Duration#ZERO} if no active cooldown
          */
         public Duration getRemaining(UUID uuid, CooldownType type) {
-            final Instant cooldown = cooldowns.get(uuid, type);
+            final CooldownKey key = new CooldownKey(uuid, type);
+            final Instant cooldown = cooldowns.get(key);
             final Instant now = Instant.now();
             if (cooldown != null && now.isBefore(cooldown)) {
                 return Duration.between(now, cooldown);
             } else {
-                remove(uuid, type);
+                cooldowns.remove(key);
                 return Duration.ZERO;
             }
         }

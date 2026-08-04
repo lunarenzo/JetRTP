@@ -7,13 +7,16 @@ import org.popcraft.chunkyborder.BorderData;
 import org.popcraft.chunky.shape.Shape;
 
 public class ChunkyBorderHook implements ClaimHook {
+    private ChunkyBorder chunkyBorder;
 
     @Override
     public boolean isInsideClaim(Location loc) {
         try {
-            ChunkyBorder cb = Bukkit.getServicesManager().load(ChunkyBorder.class);
-            if (cb != null) {
-                BorderData borderData = cb.getBorders().get(loc.getWorld().getName());
+            if (chunkyBorder == null) {
+                chunkyBorder = Bukkit.getServicesManager().load(ChunkyBorder.class);
+            }
+            if (chunkyBorder != null) {
+                BorderData borderData = chunkyBorder.getBorders().get(loc.getWorld().getName());
                 if (borderData != null) {
                     Shape shape = borderData.getBorder();
                     if (shape != null) {

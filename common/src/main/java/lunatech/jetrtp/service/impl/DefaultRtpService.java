@@ -154,12 +154,16 @@ public class DefaultRtpService implements RtpService {
 
     private void teleportPlayer(Player player, RtpProfile profile, Location loc, CompletableFuture<Boolean> future) {
         if (profile.preferSyncTp.command) {
-            player.teleport(loc);
-            completeTeleportation(player, profile, loc, future);
+            player.getScheduler().run(plugin, scheduledTask -> {
+                player.teleport(loc);
+                completeTeleportation(player, profile, loc, future);
+            }, () -> future.complete(false));
         } else {
             player.teleportAsync(loc).thenAccept(success -> {
                 if (success) {
-                    completeTeleportation(player, profile, loc, future);
+                    player.getScheduler().run(plugin, scheduledTask -> {
+                        completeTeleportation(player, profile, loc, future);
+                    }, () -> future.complete(false));
                 } else {
                     future.complete(false);
                 }
@@ -256,6 +260,11 @@ public class DefaultRtpService implements RtpService {
     @Override
     public boolean hasActiveWarmup(Player player) {
         return warmupTasks.containsKey(player.getUniqueId());
+    }
+
+    @Override
+    public boolean hasAnyActiveWarmups() {
+        return !warmupTasks.isEmpty();
     }
 
     @Override

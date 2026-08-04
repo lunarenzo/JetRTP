@@ -21,6 +21,16 @@ import java.util.Map;
 
 public class ProfileMenu implements InventoryHolder {
 
+    private static final ItemStack FILLER_ITEM;
+    static {
+        FILLER_ITEM = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = FILLER_ITEM.getItemMeta();
+        if (meta != null) {
+            meta.displayName(Component.empty());
+            FILLER_ITEM.setItemMeta(meta);
+        }
+    }
+
     private final Inventory inventory;
     private final AbstractJetRTP plugin;
     private final Map<Integer, RtpProfile> slotProfiles = new HashMap<>();
@@ -31,14 +41,8 @@ public class ProfileMenu implements InventoryHolder {
         this.inventory = Bukkit.createInventory(this, 27, Component.text("Random Teleport Destinations", NamedTextColor.DARK_GRAY));
 
         // Fill background
-        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-        ItemMeta fillerMeta = filler.getItemMeta();
-        if (fillerMeta != null) {
-            fillerMeta.displayName(Component.empty());
-            filler.setItemMeta(fillerMeta);
-        }
         for (int i = 0; i < 27; i++) {
-            inventory.setItem(i, filler);
+            inventory.setItem(i, FILLER_ITEM);
         }
 
         Collection<RtpProfile> profiles = plugin.getConfigHandler().getProfiles().values();

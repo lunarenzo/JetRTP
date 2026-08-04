@@ -28,11 +28,15 @@ public class WorldGuardHook implements ClaimHook {
         } catch (Throwable ignored) {}
     }
 
+    private final java.util.Map<org.bukkit.World, BukkitWorld> worldCache = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
     @Override
     public boolean isInsideClaim(Location loc) {
         try {
+            org.bukkit.World world = loc.getWorld();
+            BukkitWorld wgWorld = worldCache.computeIfAbsent(world, BukkitWorld::new);
             RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            RegionManager manager = container.get(new BukkitWorld(loc.getWorld()));
+            RegionManager manager = container.get(wgWorld);
             if (manager == null) return false;
 
             ApplicableRegionSet set = manager.getApplicableRegions(
