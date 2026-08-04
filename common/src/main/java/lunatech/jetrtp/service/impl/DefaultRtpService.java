@@ -157,7 +157,11 @@ public class DefaultRtpService implements RtpService {
                         .replace("%attempts%", String.valueOf(profile.maxAttempts.value))
                         .replace("<attempts>", String.valueOf(profile.maxAttempts.value));
                     if (plugin.getHookManager().isPlaceholderApiEnabled()) {
-                        msg = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, msg);
+                        try {
+                            Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+                            java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
+                            msg = (String) method.invoke(null, player, msg);
+                        } catch (Exception ignored) {}
                     }
                     player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
                 }
@@ -236,7 +240,11 @@ public class DefaultRtpService implements RtpService {
                 .replace("<jrtp_coords_z>", String.valueOf(loc.getBlockZ()));
 
             if (plugin.getHookManager().isPlaceholderApiEnabled()) {
-                msg = me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, msg);
+                try {
+                    Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+                    java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
+                    msg = (String) method.invoke(null, player, msg);
+                } catch (Exception ignored) {}
             }
             player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
         }
