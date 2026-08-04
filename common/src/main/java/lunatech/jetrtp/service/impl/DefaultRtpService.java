@@ -156,14 +156,7 @@ public class DefaultRtpService implements RtpService {
                     String msg = profile.failedMessage
                         .replace("%attempts%", String.valueOf(profile.maxAttempts.value))
                         .replace("<attempts>", String.valueOf(profile.maxAttempts.value));
-                    if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                        try {
-                            Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
-                            java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
-                            msg = (String) method.invoke(null, player, msg);
-                        } catch (Exception ignored) {}
-                    }
-                    player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
+                    player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).papi(player).mini(player).build());
                 }
                 future.complete(false);
                 return null;
@@ -239,14 +232,7 @@ public class DefaultRtpService implements RtpService {
                 .replace("<jrtp_coords_y>", String.valueOf(loc.getBlockY()))
                 .replace("<jrtp_coords_z>", String.valueOf(loc.getBlockZ()));
 
-            if (org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                try {
-                    Class<?> clazz = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
-                    java.lang.reflect.Method method = clazz.getMethod("setPlaceholders", Player.class, String.class);
-                    msg = (String) method.invoke(null, player, msg);
-                } catch (Exception ignored) {}
-            }
-            player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).build());
+            player.sendMessage(io.github.milkdrinkers.colorparser.paper.ColorParser.of(msg).papi(player).mini(player).build());
         }
 
         // Publish cross-server RTP notification
