@@ -59,6 +59,9 @@ info:
   profile-cost: "<gray>Cost: <white>$<cost>"
   profile-bounds: "<gray>Bounds: <white>Y <low> to <high>"
   profile-biomes: "<gray>Excluded Biomes: <white><biomes>"
+  profile-hits: "<gray>Cache Hits: <white><hits>"
+  profile-misses: "<gray>Cache Misses: <white><misses>"
+  profile-avg-search: "<gray>Average Search Time: <white><avg>"
 
 settings:
   unknown-key: "<red>Unknown settings key: <yellow><key>"

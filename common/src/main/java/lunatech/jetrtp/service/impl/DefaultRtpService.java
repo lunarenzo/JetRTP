@@ -141,9 +141,14 @@ public class DefaultRtpService implements RtpService {
 
         Location cachedLoc = cacheService.popCachedLocation(profile);
         if (cachedLoc != null) {
+            cacheService.recordHit(profile);
             teleportPlayer(player, profile, cachedLoc, future);
         } else {
+            cacheService.recordMiss(profile);
+            long startTime = System.currentTimeMillis();
             safeLocationService.findSafeLocationAsync(profile, player.getLocation()).thenAccept(loc -> {
+                long duration = System.currentTimeMillis() - startTime;
+                cacheService.recordSearchTime(profile, duration);
                 teleportPlayer(player, profile, loc, future);
             }).exceptionally(ex -> {
                 future.complete(false);
@@ -202,6 +207,16 @@ public class DefaultRtpService implements RtpService {
                 .replace("%y%", String.valueOf(loc.getBlockY()))
                 .replace("%z%", String.valueOf(loc.getBlockZ()));
             plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), filled);
+        }
+
+        // Publish cross-server RTP notification
+        if (lunatech.jetrtp.utility.Messaging.isReady()) {
+            lunatech.jetrtp.utility.Messaging.send(
+                lunatech.jetrtp.messaging.message.BidirectionalMessage.<String>builder()
+                    .channelId("rtp-teleport")
+                    .payload(player.getUniqueId().toString() + ":" + loc.getWorld().getName() + ":" + loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ())
+                    .build()
+            );
         }
 
         future.complete(true);

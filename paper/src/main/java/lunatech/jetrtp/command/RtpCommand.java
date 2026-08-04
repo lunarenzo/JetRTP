@@ -244,6 +244,12 @@ public final class RtpCommand {
                             .with("high", String.valueOf(profile.bounds.high))
                             .build());
                         sender.sendMessage(ColorParser.of(Translation.of("info.profile-biomes")).with("biomes", String.join(", ", profile.excludedBiomes)).build());
+                        long hits = plugin.getCacheService().getHits(profile);
+                        long misses = plugin.getCacheService().getMisses(profile);
+                        double avgTime = plugin.getCacheService().getAverageSearchTime(profile);
+                        sender.sendMessage(ColorParser.of(Translation.of("info.profile-hits")).with("hits", String.valueOf(hits)).build());
+                        sender.sendMessage(ColorParser.of(Translation.of("info.profile-misses")).with("misses", String.valueOf(misses)).build());
+                        sender.sendMessage(ColorParser.of(Translation.of("info.profile-avg-search")).with("avg", String.format("%.2fms", avgTime)).build());
                         return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                     })
                 )
