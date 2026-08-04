@@ -137,9 +137,83 @@ public class JetRTP extends AbstractJetRTP {
      * Use to reload the entire plugin.
      */
     public void onReload() {
-        onDisable();
-        onLoad();
-        onEnable();
+        reloadAll();
+    }
+
+    /**
+     * Completely reloads the plugin services, configurations, translations, and database connections.
+     */
+    public void reloadAll() {
+        Logger.get().info("Reloading JetRTP completely...");
+
+        // 1. Shutdown active location caching tasks
+        if (cacheService != null) {
+            cacheService.shutdown();
+        }
+
+        // 2. Shut down connection pools and message brokers
+        databaseHandler.onDisable(this);
+        messagingHandler.onDisable(this);
+
+        // 3. Load configurations and translations from disk
+        configHandler.onLoad(this);
+        databaseHandler.onLoad(this);
+        translationHandler.onEnable(this);
+
+        // 4. Start database connections and message brokers
+        databaseHandler.onEnable(this);
+        messagingHandler.onEnable(this);
+
+        // 5. Restart services with the new configurations
+        lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.hook.claims.PaperClaimService(this);
+        safeLocationService = new lunatech.jetrtp.service.impl.AsyncSafeLocationService(this, claimService);
+        lunatech.jetrtp.service.LagService lagService = new lunatech.jetrtp.service.impl.PaperLagService();
+        cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService, lagService);
+        lunatech.jetrtp.hook.EconomyProvider economyProvider = new lunatech.jetrtp.hook.vault.VaultEconomyProvider();
+        rtpService = new lunatech.jetrtp.service.impl.DefaultRtpService(this, safeLocationService, cacheService, economyProvider);
+
+        // 6. Start the pre-generation cache refill task
+        cacheService.startRefillTask();
+
+        Logger.get().info("JetRTP reloaded successfully.");
+    }
+
+    /**
+     * Reloads only the core configuration files, RTP profiles, and distributions.
+     */
+    public void reloadConfigOnly() {
+        Logger.get().info("Reloading configuration and profiles...");
+
+        // 1. Temporarily stop caching
+        if (cacheService != null) {
+            cacheService.shutdown();
+        }
+
+        // 2. Load configurations from disk
+        configHandler.onLoad(this);
+        databaseHandler.onLoad(this);
+
+        // 3. Re-initialize coordinate verification services
+        lunatech.jetrtp.service.LandClaimService claimService = new lunatech.jetrtp.hook.claims.PaperClaimService(this);
+        safeLocationService = new lunatech.jetrtp.service.impl.AsyncSafeLocationService(this, claimService);
+        lunatech.jetrtp.service.LagService lagService = new lunatech.jetrtp.service.impl.PaperLagService();
+        cacheService = new lunatech.jetrtp.service.impl.DefaultLocationCacheService(this, safeLocationService, lagService);
+        lunatech.jetrtp.hook.EconomyProvider economyProvider = new lunatech.jetrtp.hook.vault.VaultEconomyProvider();
+        rtpService = new lunatech.jetrtp.service.impl.DefaultRtpService(this, safeLocationService, cacheService, economyProvider);
+
+        // 4. Start the cache refill task
+        cacheService.startRefillTask();
+
+        Logger.get().info("Configuration reloaded successfully.");
+    }
+
+    /**
+     * Reloads only the translation language files.
+     */
+    public void reloadLangOnly() {
+        Logger.get().info("Reloading language files...");
+        translationHandler.onEnable(this);
+        Logger.get().info("Language files reloaded successfully.");
     }
 
     @Override
