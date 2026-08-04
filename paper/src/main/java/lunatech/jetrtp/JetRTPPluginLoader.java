@@ -50,63 +50,61 @@ public class JetRTPPluginLoader implements PluginLoader {
                 final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                 final BufferedReader br = new BufferedReader(isr)
             ) {
-                java.util.Map<String, String> repositories = new java.util.LinkedHashMap<>();
-                java.util.List<String> dependencies = new java.util.ArrayList<>();
-
+                final StringBuilder sb = new StringBuilder();
                 String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                final String content = sb.toString();
+
+                final java.util.Map<String, String> repositories = new java.util.LinkedHashMap<>();
+                final java.util.List<String> dependencies = new java.util.ArrayList<>();
+
+                final int len = content.length();
+                int idx = 0;
                 boolean inRepositories = false;
                 boolean inDependencies = false;
 
-                while ((line = br.readLine()) != null) {
-                    line = line.trim();
-                    if (line.isEmpty()) continue;
+                while (idx < len) {
+                    final char c = content.charAt(idx);
 
-                    if (line.startsWith("\"repositories\"")) {
-                        inRepositories = true;
-                        inDependencies = false;
-                        continue;
-                    }
-                    if (line.startsWith("\"dependencies\"")) {
-                        inDependencies = true;
-                        inRepositories = false;
-                        continue;
-                    }
+                    if (c == '"') {
+                        final int endQuote = content.indexOf('"', idx + 1);
+                        if (endQuote == -1) break;
+                        final String token = content.substring(idx + 1, endQuote);
+                        idx = endQuote + 1;
 
-                    if (line.contains("}")) {
-                        inRepositories = false;
-                    }
-                    if (line.contains("]")) {
-                        inDependencies = false;
-                    }
-
-                    if (inRepositories) {
-                        int firstQuote = line.indexOf('"');
-                        if (firstQuote != -1) {
-                            int secondQuote = line.indexOf('"', firstQuote + 1);
-                            if (secondQuote != -1) {
-                                String key = line.substring(firstQuote + 1, secondQuote);
-                                int colon = line.indexOf(':', secondQuote + 1);
-                                if (colon != -1) {
-                                    int thirdQuote = line.indexOf('"', colon + 1);
-                                    if (thirdQuote != -1) {
-                                        int fourthQuote = line.indexOf('"', thirdQuote + 1);
-                                        if (fourthQuote != -1) {
-                                            String val = line.substring(thirdQuote + 1, fourthQuote);
-                                            repositories.put(key, val);
-                                        }
+                        if ("repositories".equals(token)) {
+                            inRepositories = true;
+                            inDependencies = false;
+                        } else if ("dependencies".equals(token)) {
+                            inDependencies = true;
+                            inRepositories = false;
+                        } else {
+                            if (inRepositories) {
+                                while (idx < len && (Character.isWhitespace(content.charAt(idx)) || content.charAt(idx) == ':')) {
+                                    idx++;
+                                }
+                                if (idx < len && content.charAt(idx) == '"') {
+                                    final int valEndQuote = content.indexOf('"', idx + 1);
+                                    if (valEndQuote != -1) {
+                                        final String val = content.substring(idx + 1, valEndQuote);
+                                        repositories.put(token, val);
+                                        idx = valEndQuote + 1;
                                     }
                                 }
+                            } else if (inDependencies) {
+                                dependencies.add(token);
                             }
                         }
-                    } else if (inDependencies) {
-                        int firstQuote = line.indexOf('"');
-                        if (firstQuote != -1) {
-                            int secondQuote = line.indexOf('"', firstQuote + 1);
-                            if (secondQuote != -1) {
-                                String dep = line.substring(firstQuote + 1, secondQuote);
-                                dependencies.add(dep);
-                            }
-                        }
+                    } else if (c == '}') {
+                        inRepositories = false;
+                        idx++;
+                    } else if (c == ']') {
+                        inDependencies = false;
+                        idx++;
+                    } else {
+                        idx++;
                     }
                 }
 
