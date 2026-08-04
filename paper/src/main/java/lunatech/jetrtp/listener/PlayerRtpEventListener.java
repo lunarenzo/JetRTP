@@ -24,7 +24,7 @@ public class PlayerRtpEventListener implements Listener {
         Player player = event.getPlayer();
         PluginConfig cfg = plugin.getConfigHandler().getConfig();
 
-        if (!cfg.rtpOnFirstJoin.enabled || player.hasPlayedBefore() || player.hasPermission("jakesrtp.nofirstjoinrtp")) {
+        if (!cfg.rtpOnFirstJoin.enabled || player.hasPlayedBefore() || player.hasPermission("jetrtp.nofirstjoinrtp")) {
             return;
         }
 
@@ -61,7 +61,7 @@ public class PlayerRtpEventListener implements Listener {
             return;
         }
 
-        if (cfg.rtpOnDeath.requirePermission && !player.hasPermission("jakesrtp.rtpondeath")) {
+        if (cfg.rtpOnDeath.requirePermission && !player.hasPermission("jetrtp.rtpondeath")) {
             return;
         }
 

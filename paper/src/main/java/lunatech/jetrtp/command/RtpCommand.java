@@ -25,7 +25,7 @@ public final class RtpCommand {
 
     public LiteralArgumentBuilder<CommandSourceStack> build() {
         return Commands.literal("rtp")
-            .requires(source -> source.getSender().hasPermission("jakesrtp.use"))
+            .requires(source -> source.getSender().hasPermission("jetrtp.use"))
             .executes(ctx -> {
                 if (ctx.getSource().getExecutor() instanceof Player player) {
                     var guiConfig = plugin.getConfigHandler().getConfig().gui;
@@ -40,7 +40,7 @@ public final class RtpCommand {
                             player.sendMessage(ColorParser.of(Translation.of("rtp.unknown-profile")).with("profile", defProfileName).build());
                             return 0;
                         }
-                        if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + defProfileName.toLowerCase())) {
+                        if (!player.hasPermission("jetrtp.usebyname") && !player.hasPermission("jetrtp.use." + defProfileName.toLowerCase())) {
                             player.sendMessage(ColorParser.of(Translation.of("rtp.no-permission")).with("profile", defProfileName).build());
                             return 0;
                         }
@@ -65,7 +65,7 @@ public final class RtpCommand {
                 .suggests((ctx, builder) -> {
                     if (ctx.getSource().getSender() instanceof Player player) {
                         plugin.getConfigHandler().getProfiles().keySet().stream()
-                            .filter(key -> player.hasPermission("jakesrtp.usebyname") || player.hasPermission("jakesrtp.use." + key.toLowerCase()))
+                            .filter(key -> player.hasPermission("jetrtp.usebyname") || player.hasPermission("jetrtp.use." + key.toLowerCase()))
                             .filter(key -> key.toLowerCase().startsWith(builder.getRemainingLowerCase()))
                             .forEach(builder::suggest);
                     } else {
@@ -86,7 +86,7 @@ public final class RtpCommand {
                         player.sendMessage(ColorParser.of(Translation.of("rtp.unknown-profile")).with("profile", profileName).build());
                         return 0;
                     }
-                    if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + profileName.toLowerCase())) {
+                    if (!player.hasPermission("jetrtp.usebyname") && !player.hasPermission("jetrtp.use." + profileName.toLowerCase())) {
                         player.sendMessage(ColorParser.of(Translation.of("rtp.no-permission")).with("profile", profileName).build());
                         return 0;
                     }
@@ -106,7 +106,7 @@ public final class RtpCommand {
                 })
             )
             .then(Commands.literal("reload")
-                .requires(source -> source.getSender().hasPermission("jakesrtp.admin.reload"))
+                .requires(source -> source.getSender().hasPermission("jetrtp.admin.reload"))
                 .executes(ctx -> {
                     if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
                         jetRtp.reloadAll();
@@ -134,7 +134,7 @@ public final class RtpCommand {
                 )
             )
             .then(Commands.literal("force")
-                .requires(source -> source.getSender().hasPermission("jakesrtp.admin.force"))
+                .requires(source -> source.getSender().hasPermission("jetrtp.admin.force"))
                 .then(Commands.literal("config")
                     .then(Commands.argument("target", io.papermc.paper.command.brigadier.argument.ArgumentTypes.player())
                         .then(Commands.argument("profile", StringArgumentType.word())
@@ -241,7 +241,7 @@ public final class RtpCommand {
                 )
             )
             .then(Commands.literal("info")
-                .requires(source -> source.getSender().hasPermission("jakesrtp.admin.info"))
+                .requires(source -> source.getSender().hasPermission("jetrtp.admin.info"))
                 .executes(ctx -> {
                     CommandSender sender = ctx.getSource().getSender();
                     sender.sendMessage(ColorParser.of(Translation.of("info.general-header")).build());
@@ -297,7 +297,7 @@ public final class RtpCommand {
                 )
             )
             .then(Commands.literal("settings")
-                .requires(source -> source.getSender().hasPermission("jakesrtp.admin.settings"))
+                .requires(source -> source.getSender().hasPermission("jetrtp.admin.settings"))
                 .then(Commands.argument("profile", StringArgumentType.word())
                     .suggests((ctx, builder) -> {
                         plugin.getConfigHandler().getProfiles().keySet().stream()
