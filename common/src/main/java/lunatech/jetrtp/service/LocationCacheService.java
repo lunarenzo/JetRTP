@@ -28,6 +28,36 @@ public interface LocationCacheService {
     int getCacheSize(RtpProfile profile);
 
     /**
+     * Gets the number of cache hits for the profile.
+     */
+    long getHits(RtpProfile profile);
+
+    /**
+     * Gets the number of cache misses for the profile.
+     */
+    long getMisses(RtpProfile profile);
+
+    /**
+     * Gets the average search duration in milliseconds for the profile.
+     */
+    double getAverageSearchTime(RtpProfile profile);
+
+    /**
+     * Records a cache hit.
+     */
+    void recordHit(RtpProfile profile);
+
+    /**
+     * Records a cache miss.
+     */
+    void recordMiss(RtpProfile profile);
+
+    /**
+     * Records a safe location search time duration.
+     */
+    void recordSearchTime(RtpProfile profile, long durationMs);
+
+    /**
      * Starts background tasks to monitor and reload caches.
      */
     void startRefillTask();

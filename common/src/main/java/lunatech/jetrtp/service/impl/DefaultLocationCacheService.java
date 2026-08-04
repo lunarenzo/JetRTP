@@ -21,6 +21,10 @@ public class DefaultLocationCacheService implements LocationCacheService {
     private final LagService lagService;
     private final Map<String, Queue<CachedLocation>> cacheMap = new ConcurrentHashMap<>();
     private final Map<String, Boolean> refillingMap = new ConcurrentHashMap<>();
+    private final Map<String, java.util.concurrent.atomic.LongAdder> hitMap = new ConcurrentHashMap<>();
+    private final Map<String, java.util.concurrent.atomic.LongAdder> missMap = new ConcurrentHashMap<>();
+    private final Map<String, java.util.concurrent.atomic.LongAdder> totalSearchTimeMap = new ConcurrentHashMap<>();
+    private final Map<String, java.util.concurrent.atomic.LongAdder> searchCountMap = new ConcurrentHashMap<>();
 
     public DefaultLocationCacheService(AbstractJetRTP plugin, SafeLocationService safeLocationService, LagService lagService) {
         this.plugin = plugin;
@@ -134,5 +138,43 @@ public class DefaultLocationCacheService implements LocationCacheService {
         lunatech.jetrtp.database.Queries.LocationCache.save(toSave);
         cacheMap.clear();
         refillingMap.clear();
+    }
+
+    @Override
+    public long getHits(RtpProfile profile) {
+        var adder = hitMap.get(profile.name.toLowerCase());
+        return adder != null ? adder.sum() : 0L;
+    }
+
+    @Override
+    public long getMisses(RtpProfile profile) {
+        var adder = missMap.get(profile.name.toLowerCase());
+        return adder != null ? adder.sum() : 0L;
+    }
+
+    @Override
+    public double getAverageSearchTime(RtpProfile profile) {
+        var sumTime = totalSearchTimeMap.get(profile.name.toLowerCase());
+        var count = searchCountMap.get(profile.name.toLowerCase());
+        if (sumTime == null || count == null || count.sum() == 0) {
+            return 0.0;
+        }
+        return (double) sumTime.sum() / count.sum();
+    }
+
+    @Override
+    public void recordHit(RtpProfile profile) {
+        hitMap.computeIfAbsent(profile.name.toLowerCase(), k -> new java.util.concurrent.atomic.LongAdder()).increment();
+    }
+
+    @Override
+    public void recordMiss(RtpProfile profile) {
+        missMap.computeIfAbsent(profile.name.toLowerCase(), k -> new java.util.concurrent.atomic.LongAdder()).increment();
+    }
+
+    @Override
+    public void recordSearchTime(RtpProfile profile, long durationMs) {
+        totalSearchTimeMap.computeIfAbsent(profile.name.toLowerCase(), k -> new java.util.concurrent.atomic.LongAdder()).add(durationMs);
+        searchCountMap.computeIfAbsent(profile.name.toLowerCase(), k -> new java.util.concurrent.atomic.LongAdder()).increment();
     }
 }
