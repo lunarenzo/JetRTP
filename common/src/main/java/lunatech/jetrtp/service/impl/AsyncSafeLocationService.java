@@ -34,13 +34,14 @@ public class AsyncSafeLocationService implements SafeLocationService {
             return;
         }
 
-        Location potentialLoc = getPotentialLocation(profile, center);
-        if (potentialLoc == null) {
-            findNextAttempt(profile, center, future, attempts + 1);
-            return;
-        }
+        long packed = getPotentialCoords(profile, center);
+        int targetX = RandomCords.getX(packed);
+        int targetZ = RandomCords.getZ(packed);
 
-        potentialLoc.getWorld().getChunkAtAsync(potentialLoc).thenAccept(chunk -> {
+        int chunkX = targetX >> 4;
+        int chunkZ = targetZ >> 4;
+
+        center.getWorld().getChunkAtAsync(chunkX, chunkZ).thenAccept(chunk -> {
             if (chunk == null) {
                 findNextAttempt(profile, center, future, attempts + 1);
                 return;
@@ -50,41 +51,42 @@ public class AsyncSafeLocationService implements SafeLocationService {
             boolean isMiddleOut = profile.locationCheckingProfile.equalsIgnoreCase("c")
                 || (profile.locationCheckingProfile.equalsIgnoreCase("a") && isNether);
 
+            int localX = targetX & 15;
+            int localZ = targetZ & 15;
+            int y;
+
             if (isMiddleOut) {
-                SafeLocationUtils.INSTANCE.dropToMiddle(potentialLoc, profile.bounds.low, profile.bounds.high, chunk);
+                y = SafeLocationUtils.INSTANCE.dropToMiddle(localX, 255, localZ, profile.bounds.low, profile.bounds.high, chunk);
             } else {
-                SafeLocationUtils.INSTANCE.dropToGround(potentialLoc, profile.bounds.low, profile.bounds.high, chunk);
+                y = SafeLocationUtils.INSTANCE.dropToGround(localX, 255, localZ, profile.bounds.low, profile.bounds.high, chunk);
             }
 
-            int localX = potentialLoc.getBlockX() & 15;
-            int localZ = potentialLoc.getBlockZ() & 15;
-            int y = potentialLoc.getBlockY();
-
             if (y >= profile.bounds.low && y < profile.bounds.high) {
-                Material standOn = chunk.getBlock(localX, y, localZ).getType();
-                Material legs = chunk.getBlock(localX, y + 1, localZ).getType();
-                Material head = chunk.getBlock(localX, y + 2, localZ).getType();
+                Material standOn = chunk.getType(localX, y, localZ);
+                Material legs = chunk.getType(localX, y + 1, localZ);
+                Material head = chunk.getType(localX, y + 2, localZ);
 
                 if (SafeLocationUtils.INSTANCE.isSafeToBeOn(standOn)
                     && SafeLocationUtils.INSTANCE.isSafeToBeIn(legs)
                     && SafeLocationUtils.INSTANCE.isSafeToBeIn(head)) {
 
-                    if (!claimService.isInsideClaim(potentialLoc)
-                        && center.getWorld().getWorldBorder().isInside(potentialLoc)) {
+                    Location targetLocation = new Location(center.getWorld(), targetX + 0.5, y + 1.0, targetZ + 0.5);
 
-                        String biomeName = potentialLoc.getWorld().getBiome(potentialLoc).name().toLowerCase();
+                    if (!claimService.isInsideClaim(targetLocation)
+                        && center.getWorld().getWorldBorder().isInside(targetLocation)) {
+
+                        String biomeName = targetLocation.getWorld().getBiome(targetLocation).name();
                         boolean isExcluded = false;
                         for (String excluded : profile.excludedBiomes) {
-                            if (biomeName.contains(excluded.toLowerCase())) {
+                            if (biomeName.equalsIgnoreCase(excluded) || biomeName.toLowerCase().contains(excluded.toLowerCase())) {
                                 isExcluded = true;
                                 break;
                             }
                         }
 
                         if (!isExcluded) {
-                            Location target = potentialLoc.clone().add(0.5, 1.0, 0.5);
-                            target.setYaw(java.util.concurrent.ThreadLocalRandom.current().nextFloat() * 360.0f);
-                            future.complete(target);
+                            targetLocation.setYaw(java.util.concurrent.ThreadLocalRandom.current().nextFloat() * 360.0f);
+                            future.complete(targetLocation);
                             return;
                         }
                     }
@@ -99,14 +101,14 @@ public class AsyncSafeLocationService implements SafeLocationService {
         });
     }
 
-    private Location getPotentialLocation(RtpProfile profile, Location center) {
+    private long getPotentialCoords(RtpProfile profile, Location center) {
         String distName = profile.distribution.toLowerCase();
         DistributionConfig dist = plugin.getConfigHandler().getDistributions().get(distName);
         if (dist == null) {
             dist = new DistributionConfig();
         }
 
-        double[] coords;
+        long coordsPacked;
         double maxRadius = dist.radius.max;
         double minRadius = dist.radius.min;
         double centerX = 0;
@@ -121,7 +123,7 @@ public class AsyncSafeLocationService implements SafeLocationService {
         }
 
         if (isWorldBorder || dist.shape.equalsIgnoreCase("circle")) {
-            coords = RandomCords.getRandXyCircle(
+            coordsPacked = RandomCords.getRandXyCircle(
                 (int) maxRadius,
                 (int) minRadius,
                 dist.gaussianDistribution.enabled ? dist.gaussianDistribution.shrink : 0,
@@ -129,7 +131,7 @@ public class AsyncSafeLocationService implements SafeLocationService {
             );
         } else if (dist.shape.equalsIgnoreCase("rectangle")) {
             if (dist.gap.enabled) {
-                coords = RandomCords.getRandXyRectangle(
+                coordsPacked = RandomCords.getRandXyRectangle(
                     dist.size.xWidth / 2,
                     dist.size.zWidth / 2,
                     dist.gap.xWidth / 2,
@@ -138,18 +140,18 @@ public class AsyncSafeLocationService implements SafeLocationService {
                     dist.gap.zCenter
                 );
             } else {
-                coords = RandomCords.getRandXyRectangle(dist.size.xWidth / 2, dist.size.zWidth / 2);
+                coordsPacked = RandomCords.getRandXyRectangle(dist.size.xWidth / 2, dist.size.zWidth / 2);
             }
         } else { // square
             if (dist.gaussianDistribution.enabled) {
-                coords = RandomCords.getRandXySquare(
+                coordsPacked = RandomCords.getRandXySquare(
                     (int) maxRadius,
                     (int) minRadius,
                     dist.gaussianDistribution.shrink,
                     dist.gaussianDistribution.center
                 );
             } else {
-                coords = RandomCords.getRandXySquare((int) maxRadius, (int) minRadius);
+                coordsPacked = RandomCords.getRandXySquare((int) maxRadius, (int) minRadius);
             }
         }
 
@@ -167,6 +169,8 @@ public class AsyncSafeLocationService implements SafeLocationService {
             }
         }
 
-        return new Location(center.getWorld(), coords[0] + centerX, 255, coords[1] + centerZ);
+        int finalX = (int) (RandomCords.getX(coordsPacked) + centerX);
+        int finalZ = (int) (RandomCords.getZ(coordsPacked) + centerZ);
+        return RandomCords.pack(finalX, finalZ);
     }
 }

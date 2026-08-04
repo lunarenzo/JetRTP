@@ -1,12 +1,11 @@
 package lunatech.jetrtp.utility;
 
 import org.bukkit.Chunk;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.data.BlockData;
 
 /**
  * Utility for evaluating block safety and scanning coordinates.
+ * Completely optimized to run on primitive values with zero allocations.
  */
 public final class SafeLocationUtils {
 
@@ -52,43 +51,39 @@ public final class SafeLocationUtils {
     }
 
     /**
-     * Drops location to the ground using direct Chunk checks.
+     * Drops Y coordinate to the ground using direct Chunk checks.
      */
-    public void dropToGround(Location loc, int lowBound, int highBound, Chunk chunk) {
-        if (loc.getY() > highBound) loc.setY(highBound);
-        int localX = loc.getBlockX() & 15;
-        int localZ = loc.getBlockZ() & 15;
+    public int dropToGround(int localX, int startY, int localZ, int lowBound, int highBound, Chunk chunk) {
+        int y = Math.min(startY, highBound);
 
         // If start in solid block, wait until outside
-        while (loc.getBlockY() > lowBound) {
-            Material mat = chunk.getBlock(localX, loc.getBlockY(), localZ).getType();
+        while (y > lowBound) {
+            Material mat = chunk.getType(localX, y, localZ);
             if (isSafeToBeIn(mat) || isSafeToGoThrough(mat)) break;
-            loc.add(0, -1, 0);
+            y--;
         }
 
         // Search for solid ground
-        while (loc.getBlockY() > lowBound) {
-            Material mat = chunk.getBlock(localX, loc.getBlockY(), localZ).getType();
+        while (y > lowBound) {
+            Material mat = chunk.getType(localX, y, localZ);
             if (!isSafeToBeIn(mat) && !isSafeToGoThrough(mat)) break;
-            loc.add(0, -1, 0);
+            y--;
         }
+        return y;
     }
 
     /**
-     * Drops location to the middle of the vertical bounds (Nether check).
+     * Drops Y coordinate to the middle of the vertical bounds (Nether check).
      */
-    public void dropToMiddle(Location loc, int lowBound, int highBound, Chunk chunk) {
-        loc.setY((highBound + lowBound) / 2.0);
-        int localX = loc.getBlockX() & 15;
-        int localZ = loc.getBlockZ() & 15;
-
+    public int dropToMiddle(int localX, int startY, int localZ, int lowBound, int highBound, Chunk chunk) {
+        int y = (highBound + lowBound) / 2;
         int change = 0;
         int direction = 1;
         boolean upWasSolid = false;
         boolean downWasAir = false;
 
-        while (loc.getY() > lowBound && loc.getY() < highBound) {
-            Material mat = chunk.getBlock(localX, loc.getBlockY(), localZ).getType();
+        while (y > lowBound && y < highBound) {
+            Material mat = chunk.getType(localX, y, localZ);
 
             if (direction == -1) {
                 if (upWasSolid && isSafeToBeIn(mat)) break;
@@ -102,12 +97,13 @@ public final class SafeLocationUtils {
                 downWasAir = isSafeToBeIn(mat) || isSafeToGoThrough(mat);
             }
 
-            loc.add(0, change * direction, 0);
+            y += change * direction;
             if (direction == -1) {
                 change++;
             }
             direction *= -1;
-            loc.add(0, -change * direction, 0);
+            y += -change * direction;
         }
+        return y;
     }
 }

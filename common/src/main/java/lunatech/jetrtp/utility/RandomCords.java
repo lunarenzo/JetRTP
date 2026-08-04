@@ -4,16 +4,28 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Utility class for generating random coordinates in various shapes.
- * Optimized using ThreadLocalRandom and primitive math functions.
+ * Packed as primitive long to eliminate heap allocation.
  */
 public final class RandomCords {
 
     private RandomCords() {}
 
+    public static int getX(long packed) {
+        return (int) (packed >> 32);
+    }
+
+    public static int getZ(long packed) {
+        return (int) packed;
+    }
+
+    public static long pack(int x, int z) {
+        return ((long) x << 32) | (z & 0xFFFFFFFFL);
+    }
+
     /**
      * Generates random coordinates within a circle (donut shape with min/max radius).
      */
-    public static double[] getRandXyCircle(int radiusMax, int radiusMin, double gaussianShrink, double gaussianCenter) {
+    public static long getRandXyCircle(int radiusMax, int radiusMin, double gaussianShrink, double gaussianCenter) {
         var rand = ThreadLocalRandom.current();
         double angle = rand.nextDouble() * 2 * Math.PI;
         double radius;
@@ -30,23 +42,22 @@ public final class RandomCords {
             radius = Math.sqrt(minSq + rand.nextDouble() * (maxSq - minSq));
         }
 
-        return new double[]{
-            radius * Math.cos(angle),
-            radius * Math.sin(angle)
-        };
+        int x = (int) (radius * Math.cos(angle));
+        int z = (int) (radius * Math.sin(angle));
+        return pack(x, z);
     }
 
     /**
      * Generates random coordinates within a square (with exclusion zone).
      */
-    public static double[] getRandXySquare(int radiusMax, int radiusMin) {
+    public static long getRandXySquare(int radiusMax, int radiusMin) {
         return getRandXySquare(radiusMax, radiusMin, 0, 0);
     }
 
     /**
      * Generates random coordinates within a square with optional gaussian distribution.
      */
-    public static double[] getRandXySquare(int radiusMax, int radiusMin, double gaussianShrink, double gaussianCenter) {
+    public static long getRandXySquare(int radiusMax, int radiusMin, double gaussianShrink, double gaussianCenter) {
         var rand = ThreadLocalRandom.current();
         double x, z;
 
@@ -66,23 +77,23 @@ public final class RandomCords {
             }
         } while (Math.abs(x) < radiusMin && Math.abs(z) < radiusMin);
 
-        return new double[]{x, z};
+        return pack((int) x, (int) z);
     }
 
     /**
      * Generates random coordinates within a rectangle.
      */
-    public static double[] getRandXyRectangle(int xRadius, int zRadius) {
+    public static long getRandXyRectangle(int xRadius, int zRadius) {
         var rand = ThreadLocalRandom.current();
         double x = (rand.nextDouble() * 2 - 1) * xRadius;
         double z = (rand.nextDouble() * 2 - 1) * zRadius;
-        return new double[]{x, z};
+        return pack((int) x, (int) z);
     }
 
     /**
      * Generates random coordinates within a rectangle with a gap (exclusion zone).
      */
-    public static double[] getRandXyRectangle(int xRadius, int zRadius, int gapXRadius, int gapZRadius, int gapXCenter, int gapZCenter) {
+    public static long getRandXyRectangle(int xRadius, int zRadius, int gapXRadius, int gapZRadius, int gapXCenter, int gapZCenter) {
         var rand = ThreadLocalRandom.current();
         double x, z;
 
@@ -91,13 +102,6 @@ public final class RandomCords {
             z = (rand.nextDouble() * 2 - 1) * zRadius;
         } while (Math.abs(x - gapXCenter) < gapXRadius && Math.abs(z - gapZCenter) < gapZRadius);
 
-        return new double[]{x, z};
-    }
-
-    /**
-     * Converts a double array to an int array (truncating decimals).
-     */
-    public static int[] asIntArray2w(double[] arr) {
-        return new int[]{(int) arr[0], (int) arr[1]};
+        return pack((int) x, (int) z);
     }
 }
