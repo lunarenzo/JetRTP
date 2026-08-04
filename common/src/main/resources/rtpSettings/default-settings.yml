@@ -1,43 +1,130 @@
+# ==============================================================================
+# JetRTP Profile Configuration - Default Settings
+# ==============================================================================
+# This file defines a specific RTP profile. You can create multiple profile files
+# in this directory to support different destination categories or player groups.
+# ==============================================================================
+
+# 1. CORE FUNCTIONALITY & ACCESS
+# Controls whether this RTP profile is active.
 enabled: true
+
+# Controls whether players can trigger this profile using commands (e.g., /rtp default-settings).
 command-enabled: true
+
+# If true, players require explicit permission to use this profile (e.g., jakesrtp.use.default-settings).
+# If false, any player with basic permission can use it.
 require-explicit-permission: false
+
+# Priority of this profile. When a player runs /rtp without arguments,
+# the profile with the highest priority they have access to will be selected.
 priority: 1
+
+# 2. TARGET & SOURCE WORLDS
+# The world where players will land (teleport to).
 landing-world: 'world'
+
+# The worlds from which players are allowed to call/invoke this profile.
+# Supports wildcard patterns (e.g., 'world.*' matches world, world_nether, world_the_end).
 call-from-worlds:
   - 'world.*'
+
+# The name of the distribution file (in the distributions/ folder) defining the shapes
+# and bounds of coordinate generation (e.g., 'default-symmetric' maps to default-symmetric.yml).
 distribution: 'default-symmetric'
+
+# The vertical location checking method:
+#   - a : Normal search (top-down search, nether is middle-out).
+#   - c : Middle-out search (searches from the vertical midpoint outward).
 location-checking-profile: a
+
+# Cooldown in seconds before a player can execute this RTP profile again.
 cooldown: 30
+
+# 3. WARMUP SETTINGS
+# Configures the delay period prior to teleportation.
 warmup:
+  # Duration of the warmup in seconds. Set to 0 to disable warmups.
   time: 5
+  
+  # Cancel the warmup if the player moves (changes block coordinates).
   cancel-on-move: true
+  
+  # Enable countdown ticks (sound plings and subtitle updates).
   count-down: true
+  
+  # Titles displayed during the warmup phase. Supports MiniMessage and color codes.
   title-countdown: '&a&lʀᴀɴᴅᴏᴍ ᴛᴘ'
   subtitle-countdown: '&fᴛᴇʟᴇᴘᴏʀᴛɪɴɢ ɪɴ &a%time%&f...'
+  
+  # Sound played on each countdown tick.
   sound-countdown: 'BLOCK_NOTE_BLOCK_PLING'
+  
+  # Increase the pitch of the countdown sound closer to teleportation.
   sound-countdown-pitch-increase: true
+  
+  # Title displayed upon successful teleportation.
   title-success: '&a&lᴀʀʀɪᴠᴇᴅ!'
   subtitle-success: '&fʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴀɴᴅᴏᴍʟʏ ᴛᴇʟᴇᴘᴏʀᴛᴇᴅ!'
+  
+  # Sounds played upon successful teleportation (format: 'SOUND_NAME:volume:pitch').
   sounds-success:
     - 'ENTITY_ENDERMAN_TELEPORT:1.0:1.0'
     - 'ENTITY_WITHER_SPAWN:0.4:1.5'
+  
+  # Title displayed if the teleportation warmup is cancelled.
   title-cancel: '&c&lᴄᴀɴᴄᴇʟʟᴇᴅ'
   subtitle-cancel: '&fᴛᴇʟᴇᴘᴏʀᴛᴀᴛɪᴏɴ ʜᴀѕ ʙᴇᴇɴ ɪɴᴛᴇʀʀᴜᴘᴛᴇᴅ!'
+  
+  # Sounds played if the teleportation warmup is cancelled.
   sounds-cancel:
     - 'BLOCK_FIRE_EXTINGUISH:1.0:1.0'
+
+# 4. POST-TELEPORTATION ACTIONS
+# List of console commands executed upon successful teleportation.
+# Placeholders: %player%, %x%, %y%, %z%, %world%, %location%
 then-execute: []
+
+# Chat message sent to the player upon successful teleportation.
+# Supports ColorParser, PlaceholderAPI (%placeholder%), and MiniPlaceholders (<tag>).
+# Custom tags: %jrtp_destination_world%, %jrtp_coords_x%, %jrtp_coords_y%, %jrtp_coords_z%
 success-message: "<green>You have been randomly teleported to %jrtp_destination_world% (X: %jrtp_coords_x%, Y: %jrtp_coords_y%, Z: %jrtp_coords_z%)</green>"
+
+# Chat message sent to the player if a safe location cannot be found.
+# Placeholder: %attempts% / <attempts> (max-attempts value).
 failed-message: "<red>Failed to find a safe location to teleport to after %attempts% attempts.</red>"
+
+# 5. ECONOMY & LIMITS
+# The price charged (via Vault/compatible economy) to use this RTP profile.
 cost: 0.0
+
+# Y-axis vertical boundaries for coordinates checks.
 bounds:
+  # Minimum height (Y-coordinate).
   low: 32
+  # Maximum height (Y-coordinate).
   high: 255
+
+# Safety check boundaries around the chosen target coordinate block.
 check-radius:
+  # Radius size checked on the horizontal X and Z axes (blocks).
   x-z: 2
+  # Height checked on the vertical Y axis (blocks).
   vert: 2
+
+# Maximum generation attempts before giving up.
 max-attempts:
+  # The number of random coordinates generated and checked before failing.
   value: 10
+
+# 6. CACHING & THREADING PERFORMANCE
 preparations:
+  # Number of verified safe landing locations pre-cached in the database.
+  # Pre-cached locations allow instant teleportation without off-thread lookup delays.
   cache-locations: 10
+
 prefer-sync-tp:
+  # Force teleportation to execute synchronously on the main server thread.
+  # Setting this to true disables Paper/Folia's asynchronous chunk loading optimizations for RTP.
   command: false
+
