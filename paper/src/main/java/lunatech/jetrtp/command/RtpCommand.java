@@ -28,9 +28,9 @@ public final class RtpCommand {
             .requires(source -> source.getSender().hasPermission("jakesrtp.use"))
             .executes(ctx -> {
                 if (ctx.getSource().getExecutor() instanceof Player player) {
-                    plugin.getServer().getScheduler().runTask(plugin, () -> {
+                    player.getScheduler().run(plugin, task -> {
                         lunatech.jetrtp.gui.ProfileMenu.open(player, plugin);
-                    });
+                    }, null);
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 } else {
                     ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("rtp.only-players")).build());
