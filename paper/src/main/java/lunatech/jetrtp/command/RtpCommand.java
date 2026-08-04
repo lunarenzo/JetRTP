@@ -109,11 +109,29 @@ public final class RtpCommand {
                 .requires(source -> source.getSender().hasPermission("jakesrtp.admin.reload"))
                 .executes(ctx -> {
                     if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
-                        jetRtp.onReload();
+                        jetRtp.reloadAll();
                     }
                     ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("rtp.reloaded")).build());
                     return com.mojang.brigadier.Command.SINGLE_SUCCESS;
                 })
+                .then(Commands.literal("config")
+                    .executes(ctx -> {
+                        if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
+                            jetRtp.reloadConfigOnly();
+                        }
+                        ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("rtp.reloaded")).build());
+                        return com.mojang.brigadier.Command.SINGLE_SUCCESS;
+                    })
+                )
+                .then(Commands.literal("lang")
+                    .executes(ctx -> {
+                        if (plugin instanceof lunatech.jetrtp.JetRTP jetRtp) {
+                            jetRtp.reloadLangOnly();
+                        }
+                        ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("rtp.reloaded")).build());
+                        return com.mojang.brigadier.Command.SINGLE_SUCCESS;
+                    })
+                )
             )
             .then(Commands.literal("force")
                 .requires(source -> source.getSender().hasPermission("jakesrtp.admin.force"))
