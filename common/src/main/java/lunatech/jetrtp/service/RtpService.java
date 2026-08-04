@@ -56,6 +56,13 @@ public interface RtpService {
     boolean hasActiveWarmup(Player player);
 
     /**
+     * Checks if there are any active warmups on the server.
+     *
+     * @return true if there is at least one active warmup, false otherwise
+     */
+    boolean hasAnyActiveWarmups();
+
+    /**
      * Shuts down active warmups and clears state.
      */
     void shutdown();

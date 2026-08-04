@@ -18,6 +18,9 @@ public class PlayerWarmupListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
+        if (!rtpService.hasAnyActiveWarmups()) {
+            return;
+        }
         Player player = event.getPlayer();
         if (rtpService.hasActiveWarmup(player)) {
             Location from = event.getFrom();
