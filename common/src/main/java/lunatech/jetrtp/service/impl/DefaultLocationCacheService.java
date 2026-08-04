@@ -2,10 +2,10 @@ package lunatech.jetrtp.service.impl;
 
 import lunatech.jetrtp.AbstractJetRTP;
 import lunatech.jetrtp.config.RtpProfile;
+import lunatech.jetrtp.model.CachedLocation;
 import lunatech.jetrtp.service.LocationCacheService;
 import lunatech.jetrtp.service.SafeLocationService;
 import lunatech.jetrtp.service.LagService;
-import lunatech.jetrtp.model.CachedLocation;
 import org.bukkit.Location;
 import org.bukkit.World;
 import java.util.Map;
@@ -36,7 +36,9 @@ public class DefaultLocationCacheService implements LocationCacheService {
         }
         CachedLocation cached = queue.poll();
         if (cached != null) {
+            // Trigger refill in the background
             refillCacheAsync(profile);
+
             World world = plugin.getServer().getWorld(cached.worldName());
             if (world != null) {
                 return new Location(world, cached.x(), cached.y(), cached.z(), cached.yaw(), cached.pitch());
@@ -83,7 +85,7 @@ public class DefaultLocationCacheService implements LocationCacheService {
         Location center = landingWorld.getSpawnLocation();
         safeLocationService.findSafeLocationAsync(profile, center).thenAccept(loc -> {
             queue.add(new CachedLocation(
-                profile.name.toLowerCase(),
+                profile.name,
                 loc.getWorld().getName(),
                 loc.getX(),
                 loc.getY(),
@@ -94,8 +96,10 @@ public class DefaultLocationCacheService implements LocationCacheService {
             if (plugin.getConfigHandler().getConfig().logging.rtpForQueue) {
                 plugin.getComponentLogger().info("Pre-calculated safe location for profile " + profile.name + ": " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ());
             }
+            // Continue refilling recursively
             refillNext(profile, queue);
         }).exceptionally(ex -> {
+            // Delay retry on failure to avoid log spam / high load
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> refillNext(profile, queue), 100L);
             return null;
         });
@@ -109,11 +113,13 @@ public class DefaultLocationCacheService implements LocationCacheService {
 
     @Override
     public void startRefillTask() {
+        // Load cached locations from database
         List<CachedLocation> loaded = lunatech.jetrtp.database.Queries.LocationCache.load();
         for (var loc : loaded) {
             cacheMap.computeIfAbsent(loc.profileName().toLowerCase(), k -> new ConcurrentLinkedQueue<>()).add(loc);
         }
 
+        // Trigger initial fill for all enabled profiles
         for (RtpProfile profile : plugin.getConfigHandler().getProfiles().values()) {
             refillCacheAsync(profile);
         }
