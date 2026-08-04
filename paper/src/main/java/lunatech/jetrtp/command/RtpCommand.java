@@ -27,41 +27,39 @@ public final class RtpCommand {
         return Commands.literal("rtp")
             .requires(source -> source.getSender().hasPermission("jakesrtp.use"))
             .executes(ctx -> {
-                if (!(ctx.getSource().getExecutor() instanceof Player player)) {
+                if (ctx.getSource().getExecutor() instanceof Player player) {
+                    var guiConfig = plugin.getConfigHandler().getConfig().gui;
+                    if (guiConfig.enabled) {
+                        player.getScheduler().run(plugin, task -> {
+                            lunatech.jetrtp.gui.ProfileMenu.open(player, plugin);
+                        }, null);
+                    } else {
+                        String defProfileName = guiConfig.defaultProfile;
+                        RtpProfile profile = plugin.getConfigHandler().getProfiles().get(defProfileName.toLowerCase());
+                        if (profile == null) {
+                            player.sendMessage(ColorParser.of(Translation.of("rtp.unknown-profile")).with("profile", defProfileName).build());
+                            return 0;
+                        }
+                        if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + defProfileName.toLowerCase())) {
+                            player.sendMessage(ColorParser.of(Translation.of("rtp.no-permission")).with("profile", defProfileName).build());
+                            return 0;
+                        }
+                        if (rtpService.isOnCooldown(player, profile)) {
+                            long remaining = rtpService.getRemainingCooldown(player, profile) / 1000L;
+                            player.sendMessage(ColorParser.of(Translation.of("rtp.cooldown")).with("remaining", String.valueOf(remaining)).build());
+                            return 0;
+                        }
+                        rtpService.executeRtp(player, profile).thenAccept(success -> {
+                            if (!success) {
+                                player.sendMessage(ColorParser.of(Translation.of("rtp.teleport-failed")).build());
+                            }
+                        });
+                    }
+                    return com.mojang.brigadier.Command.SINGLE_SUCCESS;
+                } else {
                     ctx.getSource().getSender().sendMessage(ColorParser.of(Translation.of("rtp.only-players")).build());
                     return 0;
                 }
-
-                var config = plugin.getConfigHandler().getConfig();
-                if (config.gui.enabled) {
-                    player.getScheduler().run(plugin, task -> {
-                        lunatech.jetrtp.gui.ProfileMenu.open(player, plugin);
-                    }, null);
-                } else {
-                    String defProfileName = config.gui.defaultProfile;
-                    RtpProfile profile = plugin.getConfigHandler().getProfiles().get(defProfileName.toLowerCase());
-                    if (profile == null) {
-                        player.sendMessage(ColorParser.of(Translation.of("rtp.unknown-profile")).with("profile", defProfileName).build());
-                        return 0;
-                    }
-                    if (!player.hasPermission("jakesrtp.usebyname") && !player.hasPermission("jakesrtp.use." + defProfileName.toLowerCase())) {
-                        player.sendMessage(ColorParser.of(Translation.of("rtp.no-permission")).with("profile", defProfileName).build());
-                        return 0;
-                    }
-
-                    if (rtpService.isOnCooldown(player, profile)) {
-                        long remaining = rtpService.getRemainingCooldown(player, profile) / 1000L;
-                        player.sendMessage(ColorParser.of(Translation.of("rtp.cooldown")).with("remaining", String.valueOf(remaining)).build());
-                        return 0;
-                    }
-
-                    rtpService.executeRtp(player, profile).thenAccept(success -> {
-                        if (!success) {
-                            player.sendMessage(ColorParser.of(Translation.of("rtp.teleport-failed")).build());
-                        }
-                    });
-                }
-                return com.mojang.brigadier.Command.SINGLE_SUCCESS;
             })
             .then(Commands.argument("profile", StringArgumentType.word())
                 .suggests((ctx, builder) -> {
