@@ -74,4 +74,12 @@ public interface RtpService {
      * @return the last destination location, or null if they haven't teleported yet
      */
     org.bukkit.Location getLastDestination(java.util.UUID uuid);
+
+    /**
+     * Gets the max attempts of the last teleport attempt for the player.
+     *
+     * @param uuid the player's UUID
+     * @return the last max attempts count, or 0 if they haven't teleported yet
+     */
+    int getLastAttempts(java.util.UUID uuid);
 }
