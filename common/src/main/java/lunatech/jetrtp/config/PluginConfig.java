@@ -129,6 +129,10 @@ public class PluginConfig implements VersionedConfig {
     @Comment("Debug mode")
     public boolean debug = false;
 
+    @Comment("Cooldown storage type (PDC for local playerdata PDC storage, DATABASE for remote SQL database storage)")
+    @Setting("cooldown-storage-type")
+    public String cooldownStorageType = "PDC";
+
     @Comment("RTP GUI Settings")
     public RtpGuiConfig gui = new RtpGuiConfig();
 
