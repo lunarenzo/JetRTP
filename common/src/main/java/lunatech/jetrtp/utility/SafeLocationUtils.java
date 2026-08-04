@@ -58,14 +58,14 @@ public final class SafeLocationUtils {
 
         // If start in solid block, wait until outside
         while (y > lowBound) {
-            Material mat = chunk.getBlockType(localX, y, localZ);
+            Material mat = chunk.getBlockData(localX, y, localZ).getMaterial();
             if (isSafeToBeIn(mat) || isSafeToGoThrough(mat)) break;
             y--;
         }
 
         // Search for solid ground
         while (y > lowBound) {
-            Material mat = chunk.getBlockType(localX, y, localZ);
+            Material mat = chunk.getBlockData(localX, y, localZ).getMaterial();
             if (!isSafeToBeIn(mat) && !isSafeToGoThrough(mat)) break;
             y--;
         }
@@ -83,7 +83,7 @@ public final class SafeLocationUtils {
         boolean downWasAir = false;
 
         while (y > lowBound && y < highBound) {
-            Material mat = chunk.getBlockType(localX, y, localZ);
+            Material mat = chunk.getBlockData(localX, y, localZ).getMaterial();
 
             if (direction == -1) {
                 if (upWasSolid && isSafeToBeIn(mat)) break;
