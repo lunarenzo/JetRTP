@@ -389,3 +389,4 @@ fleet.local.yaml
 # Local/private documentation
 dev-docs/
 
+.agents/
