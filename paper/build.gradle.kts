@@ -26,7 +26,7 @@ dependencies {
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.9-SNAPSHOT")
     compileOnly("com.github.TechFortress:GriefPrevention:16.18.2")
     compileOnly("org.popcraft:chunky-common:1.4.10")
-    compileOnly("org.popcraft:chunkyborder-common:1.2.21")
+    compileOnly("org.popcraft:chunkyborder-common:1.2.33")
 
     // Database dependencies - Core
     library(libs.bundles.flyway)
