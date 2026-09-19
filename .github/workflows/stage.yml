@@ -52,7 +52,7 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1 # Shallow clone for faster checkout
 
@@ -131,7 +131,7 @@ jobs:
       # Checkout repository
       - name: Checkout Repository
         if: ${{ !contains(github.ref_name, inputs.prerelease_suffix) }}
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1 # Shallow clone for faster checkout
 
@@ -145,7 +145,7 @@ jobs:
       # Commit and push updated version properties file
       - name: Update repository
         if: ${{ !contains(github.ref_name, inputs.prerelease_suffix) }}
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: bump version to ${{ github.ref_name }}"
           branch: ${{ github.event.repository.default_branch }}
@@ -157,7 +157,7 @@ jobs:
     runs-on: ${{ inputs.os }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1 # Shallow clone for faster checkout
 
@@ -197,7 +197,7 @@ jobs:
             ${{ github.workspace }}/paper/build/libs/*.jar
 
       - name: Upload Release Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: Release
           path: |
